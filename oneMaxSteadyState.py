@@ -21,6 +21,13 @@ class CrossoverType(Enum):
     UNIFORM = "uniform"
 
 
+class SelectionType(Enum):
+    TOURNAMENT = "tournament"
+    ROULETTE = "roulette"
+    RANDOM = "random"
+    BEST = "best"
+
+
 @dataclass
 class GeneticConfig:
     """Configuration pour l'algorithme génétique"""
@@ -41,7 +48,7 @@ class OperatorConfig:
     population_size: Optional[int] = None
     mutation_type: Optional[MutationType] = None
     crossover_type: Optional[CrossoverType] = None
-    selection_function: Optional[Callable] = None
+    selection_type: Optional[SelectionType] = None
     values: List[float] = None
 
     def __post_init__(self):
@@ -209,6 +216,17 @@ class GeneticAlgorithm:
         }
         return crossover_functions.get(crossover_type, self.cxUniform)
 
+    def _get_selection_function(self, selection_type: SelectionType) -> Callable:
+        """Retourne la fonction de sélection appropriée selon le type"""
+        selection_functions = {
+            SelectionType.TOURNAMENT: lambda pop, k: tools.selTournament(pop, k, self.config.tournament_size),
+            SelectionType.ROULETTE: tools.selRoulette,
+            SelectionType.RANDOM: tools.selRandom,
+            SelectionType.BEST: tools.selBest,
+        }
+        return selection_functions.get(selection_type,
+                                       lambda pop, k: tools.selTournament(pop, k, self.config.tournament_size))
+
     def _mutation_bit_flip(self, individual: List[int]) -> None:
         """Mutation bit-flip standard"""
         for i in range(len(individual)):
@@ -217,7 +235,7 @@ class GeneticAlgorithm:
 
     def _select_and_modify_offspring(self, population: List, operator: OperatorConfig) -> List:
         """Sélection et modification des descendants"""
-        selection_function = operator.selection_function or self.toolbox.select
+        selection_function = self._get_selection_function(operator.selection_type)
         offspring = selection_function(population, 2)
         offspring = list(map(self.toolbox.clone, offspring))
 
@@ -325,6 +343,25 @@ class ExperimentConfig:
             for crossover_type, name, color in crossover_configs
         ]
 
+    @staticmethod
+    def get_selection_config() -> List[OperatorConfig]:
+        """Configuration pour les tests de sélection"""
+        selection_configs = [
+            (SelectionType.TOURNAMENT, "Tournoi", "blue"),
+            (SelectionType.ROULETTE, "Roulette", "green"),
+            (SelectionType.RANDOM, "Rang", "black"),
+            (SelectionType.BEST, "Meilleurs", "red")
+        ]
+
+        return [
+            OperatorConfig(
+                name=name,
+                color=color,
+                selection_type=selection_type
+            )
+            for selection_type, name, color in selection_configs
+        ]
+
 
 class GeneticExperiment:
     """Classe pour gérer les expériences avec l'algorithme génétique"""
@@ -348,6 +385,11 @@ class GeneticExperiment:
         operators = self.experiment_config.get_crossover_config()
         self._run_experiment(operators, "Comparaison des opérateurs de croisement")
 
+    def run_selection_experiment(self):
+        """Exécute l'expérience sur les opérateurs de sélection"""
+        operators = self.experiment_config.get_selection_config()
+        self._run_experiment(operators, "Comparaison des opérateurs de sélection")
+
     def _run_experiment(self, operators: List[OperatorConfig], title: str):
         """Exécute une expérience avec les opérateurs donnés"""
         self.ga.run_steady_state(operators)
@@ -362,8 +404,15 @@ def main():
     # Choisir l'expérience à exécuter
     # experiment.run_mutation_experiment()
     # Autre experiences : croissement, population ou selection ?
-    # experiment.run_population_experiment()
-    experiment.run_crossover_experiment()
+
+    ### Population experiment
+    experiment.run_population_experiment()
+
+    ### Crossover experiment
+    # experiment.run_crossover_experiment()
+
+    ### Selection experience
+    # experiment.run_selection_experiment()
 
 
 if __name__ == '__main__':
