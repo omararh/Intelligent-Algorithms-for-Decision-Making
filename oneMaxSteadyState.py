@@ -112,14 +112,14 @@ class GeneticAlgorithm:
     ### Opérateurs de croissement ###
 
     # mate in one point
-    def cxOnePoint(ind1, ind2):
+    def cxOnePoint(self, ind1, ind2):
         size = min(len(ind1), len(ind2))
         cxpoint = random.randint(1, size - 1)
         ind1[cxpoint:], ind2[cxpoint:] = ind2[cxpoint:], ind1[cxpoint:]
         return ind1, ind2
 
     # mate in two points
-    def cxTwoPoint(ind1, ind2):
+    def cxTwoPoint(self, ind1, ind2):
         size = min(len(ind1), len(ind2))
         cxpoint1 = random.randint(1, size)
         cxpoint2 = random.randint(1, size - 1)
@@ -131,7 +131,7 @@ class GeneticAlgorithm:
             = ind2[cxpoint1:cxpoint2], ind1[cxpoint1:cxpoint2]
         return ind1, ind2
 
-    def cxUniform(ind1, ind2, indpb=0.5):
+    def cxUniform(self, ind1, ind2, indpb=0.5):
         size = min(len(ind1), len(ind2))
         for i in range(size):
             if random.random() < indpb:
@@ -200,6 +200,15 @@ class GeneticAlgorithm:
         }
         return mutation_functions.get(mutation_type, self._mutation_bit_flip)
 
+    def _get_crossover_function(self, crossover_type: CrossoverType) -> Callable:
+        """Retourne la fonction de croisement appropriée selon le type"""
+        crossover_functions = {
+            CrossoverType.ONE_POINT: self.cxOnePoint,
+            CrossoverType.TWO_POINT: self.cxTwoPoint,
+            CrossoverType.UNIFORM: self.cxUniform
+        }
+        return crossover_functions.get(crossover_type, self.cxUniform)
+
     def _mutation_bit_flip(self, individual: List[int]) -> None:
         """Mutation bit-flip standard"""
         for i in range(len(individual)):
@@ -213,15 +222,15 @@ class GeneticAlgorithm:
         offspring = list(map(self.toolbox.clone, offspring))
 
         # Application des opérateurs génétiques
+        crossover_function = self._get_crossover_function(operator.crossover_type)
         for child1, child2 in zip(offspring[::2], offspring[1::2]):
             if random.random() < self.config.p_crossover:
-                self.toolbox.mate(child1, child2)
+                crossover_function(child1, child2)
                 del child1.fitness.values
                 del child2.fitness.values
 
         # Sélection de la fonction de mutation appropriée
         mutation_function = self._get_mutation_function(operator.mutation_type)
-
         for mutant in offspring:
             if random.random() < self.config.p_mutation:
                 mutation_function(mutant)
@@ -332,13 +341,11 @@ class GeneticExperiment:
     def run_mutation_experiment(self):
         """Exécute l'expérience sur les opérateurs de mutation"""
         operators = self.experiment_config.get_mutation_config()
-        print("operators ---> ", operators)
         self._run_experiment(operators, "Comparaison des opérateurs de mutation")
 
     def run_crossover_experiment(self):
         """Exécute l'expérience sur les opérateurs de croisement"""
         operators = self.experiment_config.get_crossover_config()
-        print("operators ---> ", operators)
         self._run_experiment(operators, "Comparaison des opérateurs de croisement")
 
     def _run_experiment(self, operators: List[OperatorConfig], title: str):
@@ -353,10 +360,10 @@ def main():
     experiment = GeneticExperiment(config)
 
     # Choisir l'expérience à exécuter
-    experiment.run_mutation_experiment()
+    # experiment.run_mutation_experiment()
     # Autre experiences : croissement, population ou selection ?
     # experiment.run_population_experiment()
-    # experiment.run_crossover_experiment()
+    experiment.run_crossover_experiment()
 
 
 if __name__ == '__main__':
