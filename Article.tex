@@ -1,0 +1,205 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{graphicx}
+
+\title{Algorithmes Génétiques}
+\author{Omar Arharbi}
+\date{Janvier 2025}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+\subsection{Algorithmes évolutionnaires}
+
+Les algorithmes évolutionnaires représentent une approche bio-inspirée de l'optimisation. Ils constituent une méthode d'optimisation innovante, puisant son inspiration dans les principes de l'évolution biologique. Cette approche vise à résoudre des problèmes complexes en simulant le processus d'évolution naturelle.
+
+\subsubsection{Principe fondamental}
+
+Au cour of these algorithms, the concept of "population" is found - an ensemble of solutions potentielles au problème donné. Chaque solution, ou "individu", possède des caractéristiques uniques qui déterminent son adaptation à l'environnement du problème.
+
+\subsubsection{Processus itératif}
+
+L'algorithme fonctionne de manière itérative, suivant ces étapes clés :
+
+\begin{itemize}
+    \item Initialisation : Création d'une population initiale diverse.
+    \item Évaluation : Mesure de la qualité (fitness) de chaque individu.
+    \item Sélection : Choix des individus les plus prometteurs.
+    \item Reproduction : Création de nouveaux individus par croisement.
+    \item Mutation : Introduction de variations aléatoires.
+    \item Remplacement : Intégration des nouveaux individus dans la population.
+\end{itemize}
+
+\subsubsection{Opérateurs clés}
+\begin{itemize}
+    \item Sélection : Identifie les meilleurs individus, souvent par des méthodes comme la \item roulette ou le tournoi.
+    \item Croisement : Combine les caractéristiques de deux parents pour créer des descendants.
+    \item Mutation : Apporte des modifications aléatoires pour maintenir la diversité.
+\end{itemize}
+
+\subsubsection{Objectif et arrêt}
+L'algorithme vise à maximiser une fonction objective, représentant la qualité des solutions. Il s'arrête lorsqu'un critère prédéfini est atteint, comme un nombre maximal d'itérations ou l'obtention d'une solution satisfaisante.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{The-basic-process-of-genetic-algorithm.png}
+    \caption{Genetic algorithm process}
+    \label{fig:enter-label}
+\end{figure}
+
+\subsubsection{Équilibre crucial}
+ Le succès de l'algorithme repose sur un équilibre délicat entre l'exploitation des meilleures solutions trouvées et l'exploration de nouvelles possibilités, guidé par le choix judicieux des opérateurs.
+
+
+\subsection{Le problème One-Max}
+
+Le problème One-Max est un exemple classique utilisé pour illustrer le fonctionnement des algorithmes génétiques. Il se caractérise par sa simplicité et son efficacité pédagogique.
+
+\subsubsection{Définition du problème}
+
+Soit une liste binaire $L$ de longueur $N$, où chaque élément $l_i \in \{0,1\}$.
+
+La fonction de fitness $f(L)$ est définie comme :
+
+\[
+f(L) = \sum_{i=1}^N l_i
+\]
+
+\subsubsection{Objectif}
+
+L'objectif est de maximiser la valeur de fitness, c'est-à-dire trouver la liste $L$ qui produit la plus grande somme possible.
+
+\subsubsection{Exemple}
+
+Pour $N = 10$, considérons la liste suivante générée aléatoirement :
+
+\[
+L = [0, 1, 0, 0, 1, 1, 1, 0, 0, 0]
+\]
+
+Sa valeur de fitness est :
+
+\[
+f(L) = 0 + 1 + 0 + 0 + 1 + 1 + 1 + 0 + 0 + 0 = 4
+\]
+
+\subsubsection{Solution optimale}
+
+La solution optimale pour $N = 10$ est :
+
+\[
+L_{opt} = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+\]
+
+avec une fitness maximale :
+
+\[
+f(L_{opt}) = 10
+\]
+
+\subsubsection{Rôle de l'algorithme génétique}
+
+Un algorithme génétique efficace devrait converger vers cette solution optimale, produisant des individus (listes) composés uniquement de 1, atteignant ainsi la fitness maximale égale à $N$.
+
+\subsection{Présentation des trois méthodes étudiées}
+Afin de résoudre le problème du One-Max, nous avons implémenté différents algorithmes évolutionnaires.
+
+\subsubsection{Algorithme génétique steady state}
+L'algorithme steady state est conçu pour choisir un nombre spécifique d'individus à chaque génération, généralement deux, mais ce nombre peut être étendu. L'initialisation de la population peut se faire de manière fixe ou aléatoire.
+
+\paragraph{Méthodes de sélection}
+
+Pour sélectionner N individus, plusieurs approches sont possibles :
+
+\begin{itemize}
+    \item \textbf{Sélection par roulette :} La probabilité de sélection est proportionnelle à la valeur de fitness.
+    \item \textbf{Sélection par tournoi :} Des tournois de taille k sont organisés, les vainqueurs étant sélectionnés.
+    \item \textbf{Sélection par classement :} Les N individus ayant les meilleures performances sont retenus.
+    \item \textbf{Sélection aléatoire :} N individus sont choisis au hasard dans la population.
+\end{itemize}
+
+\paragraph{Techniques de croisement}
+
+Les individus sélectionnés subissent un croisement selon diverses méthodes :
+
+\begin{itemize}
+    \item \textbf{Croisement mono-point :} Un point d'échange est déterminé aléatoirement.
+    \item \textbf{Croisement bi-point :} Deux points d'échange sont choisis au hasard.
+    \item \textbf{Croisement uniforme :} Chaque caractéristique est héritée indépendamment d'un parent ou de l'autre.
+\end{itemize}
+
+\paragraph{Opérations de mutation}
+
+Après le croisement, chaque individu a une probabilité P de subir une mutation :
+
+\begin{itemize}
+    \item \textbf{Mutation bit-flip :} Chaque bit peut être modifié avec une probabilité P.
+    \item \textbf{Mutation one-flip :} Un seul bit est modifié aléatoirement.
+    \item \textbf{Mutation k-flip :} k bits sont sélectionnés et modifiés au hasard.
+\end{itemize}
+
+\paragraph{Renouvellement de la population}
+
+L'intégration des nouveaux individus dans la population existante peut se baser sur différents critères, tels que l'ancienneté ou la performance des individus.
+
+\paragraph{Critères d'arrêt}
+
+L'algorithme se termine selon des conditions prédéfinies, comme un nombre maximal de générations ou l'atteinte d'une solution satisfaisante.
+
+\subsubsection{Algorithme à estimation de distribution}
+L'algorithme à estimation de distribution vise à estimer la distribution de probabilité des solutions dans l'espace de recherche. Voici un exemple détaillé pour N = 4 et K = 3 :
+
+\begin{enumerate}
+\item Vecteur de distribution initiale : [0.5, 0.3, 0.7, 0.4]
+
+\item Population initiale générée :
+    \begin{itemize}
+    \item Individu 1: [1, 0, 1, 0] → Fitness = 2
+    \item Individu 2: [1, 1, 1, 0] → Fitness = 3
+    \item Individu 3: [0, 0, 1, 1] → Fitness = 2
+    \item Individu 4: [1, 0, 1, 1] → Fitness = 3
+    \item Individu 5: [1, 1, 1, 1] → Fitness = 4
+    \end{itemize}
+
+\item Sélection des K = 3 meilleurs individus :
+    \begin{itemize}
+    \item [1, 1, 1, 1] → Fitness = 4
+    \item [1, 1, 1, 0] → Fitness = 3
+    \item [1, 0, 1, 1] → Fitness = 3
+    \end{itemize}
+
+\item Calcul du nouveau vecteur de distribution :
+    \begin{itemize}
+    \item Position 1: (1 + 1 + 1)/3 = 1.0
+    \item Position 2: (1 + 1 + 0)/3 = 0.66
+    \item Position 3: (1 + 1 + 1)/3 = 1.0
+    \item Position 4: (1 + 0 + 1)/3 = 0.66
+    \end{itemize}
+
+\item Nouveau vecteur de distribution : [1.0, 0.66, 1.0, 0.66]
+
+\item L'algorithme continue avec ce nouveau vecteur pour générer la prochaine population, et ainsi de suite jusqu'à atteindre le critère d'arrêt.
+\end{enumerate}
+On peut observer que le vecteur de probabilité évolue pour favoriser les bits qui apparaissent fréquemment dans les meilleures solutions.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.8\linewidth]{diagrame-distribution-proba.png}
+\caption{Diagramme générique de l'algo a estimation de distribution}
+\label{fig:distribution-proba}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\linewidth]{algo-estimation-dest.png}
+    \caption{Pseudo code de l'algo a estimation de distribution}
+    \label{fig:enter-label}
+\end{figure}
+
+
+
+\end{document}
