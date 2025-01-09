@@ -349,7 +349,7 @@ class ExperimentConfig:
         selection_configs = [
             (SelectionType.TOURNAMENT, "Tournoi", "blue"),
             (SelectionType.ROULETTE, "Roulette", "green"),
-            (SelectionType.RANDOM, "Rang", "black"),
+            (SelectionType.RANDOM, "Rand", "black"),
             (SelectionType.BEST, "Meilleurs", "red")
         ]
 
