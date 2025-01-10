@@ -4,7 +4,6 @@ from deap import base, creator, tools
 import random
 import matplotlib.pyplot as plt
 import seaborn as sns
-import numpy as np
 
 
 @dataclass
@@ -79,7 +78,7 @@ class DistributionEstimator:
     def update_distribution(self, population: List, distribution: List[float], k: int):
         """Met à jour la distribution basée sur les k meilleurs individus"""
         best_individuals = tools.selBest(population, k)
-    
+
         for pos in range(self.config.individual_length):
             # Calcule la moyenne des bits à cette position
             bit_sum = sum(ind[pos] for ind in best_individuals)

@@ -402,11 +402,11 @@ def main():
     experiment = GeneticExperiment(config)
 
     # Choisir l'expérience à exécuter
-    # experiment.run_mutation_experiment()
+    experiment.run_mutation_experiment()
     # Autre experiences : croissement, population ou selection ?
 
     ### Population experiment
-    experiment.run_population_experiment()
+    # experiment.run_population_experiment()
 
     ### Crossover experiment
     # experiment.run_crossover_experiment()

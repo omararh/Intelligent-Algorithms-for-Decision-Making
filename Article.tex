@@ -150,6 +150,11 @@ L'intégration des nouveaux individus dans la population existante peut se baser
 
 L'algorithme se termine selon des conditions prédéfinies, comme un nombre maximal de générations ou l'atteinte d'une solution satisfaisante.
 
+
+\textit{\textbf{Pseudo Algo :}}
+
+\includegraphics[width=0.9\linewidth]{steady-pseudo-algo.png}
+
 \subsubsection{Algorithme à estimation de distribution}
 L'algorithme à estimation de distribution vise à estimer la distribution de probabilité des solutions dans l'espace de recherche. Voici un exemple détaillé pour N = 4 et K = 3 :
 
@@ -186,20 +191,52 @@ L'algorithme à estimation de distribution vise à estimer la distribution de pr
 \end{enumerate}
 On peut observer que le vecteur de probabilité évolue pour favoriser les bits qui apparaissent fréquemment dans les meilleures solutions.
 
-\begin{figure}[h]
-\centering
+\textbf{\textit{Diagramme et Pseudo algo :}}
+
 \includegraphics[width=0.8\linewidth]{diagrame-distribution-proba.png}
-\caption{Diagramme générique de l'algo a estimation de distribution}
-\label{fig:distribution-proba}
-\end{figure}
 
-\begin{figure}
-    \centering
-    \includegraphics[width=0.8\linewidth]{algo-estimation-dest.png}
-    \caption{Pseudo code de l'algo a estimation de distribution}
-    \label{fig:enter-label}
-\end{figure}
+\includegraphics[width=0.9\linewidth]{Estim-distrib-algo.png}
 
+\subsubsection{Algorithme compact}
+L'algorithme génétique compact (cGA) est une variante minimaliste des algorithmes d'estimation de distribution. Il opère sur un vecteur de probabilité $V$ de taille $N$ initialisé uniformément à 0.5, représentant la probabilité de chaque bit d'être à 1. À chaque génération, seuls deux individus sont générés à partir de ce vecteur, puis comparés pour mettre à jour les probabilités.
 
+La mise à jour du vecteur se fait en comparant le meilleur individu (winner) et le moins bon (loser). Pour chaque position $i$ :
+\begin{itemize}
+    \item Si les bits sont identiques, $V[i]$ reste inchangé
+    \item Si $\text{winner}[i] = 1$ et $\text{loser}[i] = 0$ : $V[i] \leftarrow V[i] + \frac{1}{N}$
+    \item Si $\text{winner}[i] = 0$ et $\text{loser}[i] = 1$ : $V[i] \leftarrow V[i] - \frac{1}{N}$
+\end{itemize}
+
+Exemple pour $N = 6$ :
+
+\begin{enumerate}
+   \item Vecteur initial : $V = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5]$
+
+   \item Population générée :
+   \begin{itemize}
+       \item Individu 1 : [1, 1, 0, 0, 1, 1] → Fitness = 4
+       \item Individu 2 : [0, 1, 0, 1, 0, 0] → Fitness = 2
+   \end{itemize}
+
+   \item Comparaison bit à bit (Ind1 = winner, Ind2 = loser):
+   \begin{itemize}
+       \item Position 1 : 1 vs 0 → $V[1] = 0.5 + \frac{1}{6}$
+       \item Position 2 : 1 vs 1 → $V[2]$ inchangé
+       \item Position 3 : 0 vs 0 → $V[3]$ inchangé
+       \item Position 4 : 0 vs 1 → $V[4] = 0.5 - \frac{1}{6}$
+       \item Position 5 : 1 vs 0 → $V[5] = 0.5 + \frac{1}{6}$
+       \item Position 6 : 1 vs 0 → $V[6] = 0.5 + \frac{1}{6}$
+   \end{itemize}
+
+   \item Nouveau vecteur : $V = [0.67, 0.5, 0.5, 0.33, 0.67, 0.67]$
+\end{enumerate}
+
+Ce processus est répété jusqu'à convergence ou jusqu'à ce qu'un critère d'arrêt soit atteint.
+
+\textbf{\textit{Diagramme et Pseudo algo :}}
+
+\includegraphics[width=0.9\linewidth]{diagram-compact.png}
+
+\includegraphics[width=0.9\linewidth]{compact-pseudo-algo.png}
 
 \end{document}
