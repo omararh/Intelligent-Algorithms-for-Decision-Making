@@ -139,7 +139,7 @@ class GeneticAlgorithm:
                 worst = self.toolbox.worst(population, 1)
         return population
 
-    def _single_run(self) -> Tuple[List[float], List[float], List[List[float]]]:
+    def _single_run(self, isAdaptative=True) -> Tuple[List[float], List[float], List[List[float]]]:
         """Exécute une seule instance de l'algorithme"""
         # Initialisation des accumulateurs
         gains = [[0.] for _ in range(len(self.roulette.operators))]
@@ -187,17 +187,17 @@ class GeneticAlgorithm:
             fitness_values = [ind.fitness.values[0] for ind in population]
             max_fitness = max(fitness_values)
             mean_fitness = sum(fitness_values) / len(population)
+            if isAdaptative:
+                # Calcul du gain et mise à jour des utilités
+                gain = max(0, mean_fitness - old_fitness)
+                for op in self.roulette.operators:
+                    op_index = self.roulette.operators.index(op)
+                    gains[op_index].append(0. if op != operator else gain)
 
-            # Calcul du gain et mise à jour des utilités
-            gain = max(0, mean_fitness - old_fitness)
-            for op in self.roulette.operators:
-                op_index = self.roulette.operators.index(op)
-                gains[op_index].append(0. if op != operator else gain)
+                self.roulette.calculate_utility(operator, utilities, gains)
+                self.roulette.update_probabilities(utilities)
 
-            self.roulette.calculate_utility(operator, utilities, gains)
-            self.roulette.update_probabilities(utilities)
-
-            # Enregistrement des valeurs
+                # Enregistrement des valeurs
             for i in range(len(self.roulette.operators)):
                 proba_distrib_values[i].append(self.roulette.prob_dist[i])
             max_fitness_values.append(max_fitness)
@@ -226,14 +226,14 @@ class GeneticAlgorithm:
 
         return mean_max_fitness, mean_avg_fitness, mean_proba_op
 
-    def run(self) -> Tuple[List[float], List[float], List[List[float]]]:
+    def run(self, isAdaptative=True) -> Tuple[List[float], List[float], List[List[float]]]:
         """Exécute l'algorithme génétique avec la roulette adaptative"""
         maxFitness_history = []
         meanFitness_history = []
         proba_distrib_history = []
 
         for _ in range(self.config.nb_runs):
-            max_fitness, mean_fitness, proba_distrib = self._single_run()
+            max_fitness, mean_fitness, proba_distrib = self._single_run(isAdaptative)
             maxFitness_history.append(max_fitness)
             meanFitness_history.append(mean_fitness)
             proba_distrib_history.append(proba_distrib)
@@ -242,30 +242,33 @@ class GeneticAlgorithm:
                                           meanFitness_history,
                                           proba_distrib_history)
 
-    def visualize_results(self, mean_max: List[float], mean_avg: List[float],
-                          mean_proba_op: List[List[float]]) -> None:
-        """Visualise les résultats avec matplotlib"""
-        # Graphique des fitness
-        plt.figure(figsize=(10, 6))
-        sns.set_style("whitegrid")
-        plt.plot(mean_max, color='blue', label='Fitness max')
-        plt.plot(mean_avg, color='orange', label='Fitness moyenne')
-        plt.legend()
-        plt.xlabel('Generation')
-        plt.ylabel('Fitness')
-        plt.title(f'Fitness moyenne et max sur {self.config.nb_runs} runs')
-        plt.show()
 
+class Visualiser:
+    def mutation_op_distribution(self, mean_max: List[float], mean_avg: List[float],
+                                 mean_proba_op: List[List[float]], algorithm) -> None:
         # Graphique des distributions
         plt.figure(figsize=(10, 6))
-        colors = ['blue', 'red', 'green', 'black']
+        colors = ['yellow', 'black', 'pink', 'green']
         for i, (proba, name) in enumerate(zip(mean_proba_op,
-                                              self.roulette.operator_names)):
+                                              algorithm.roulette.operator_names)):
             plt.plot(proba, color=colors[i], label=name)
         plt.legend()
         plt.xlabel('Generation')
         plt.ylabel('Distribution')
-        plt.title(f'Distribution des opérateurs sur {self.config.nb_runs} runs')
+        plt.title(f'Distribution des opérateurs')
+        plt.show()
+
+    def compare_roulettes(self, comparateur: List[dict]) -> None:
+        """Compare les roulettes fixe et adaptative"""
+        plt.figure(figsize=(10, 6))
+        sns.set_style("whitegrid")
+        for comp in comparateur:
+            plt.plot(comp["mean_avg"], color=comp["color"],
+                     label=f'Fitness moyenne ({comp["nom"]})')
+        plt.legend()
+        plt.xlabel('Generation')
+        plt.ylabel('Fitness')
+        plt.title(f'Comparaison des fitness entre roulette fixe et adaptative')
         plt.show()
 
 
@@ -273,8 +276,36 @@ def main():
     """Point d'entrée principal"""
     config = GeneticAlgorithmConfig()
     algorithm = GeneticAlgorithm(config)
-    mean_max, mean_avg, mean_proba_op = algorithm.run()
-    algorithm.visualize_results(mean_max, mean_avg, mean_proba_op)
+    visualiser = Visualiser()
+
+    # Configuration des différentes versions à comparer
+    COMPARATEUR = [
+        {
+            "nom": "Roulette fixe",
+            "isAdaptative": False,
+            "color": "black",
+            "values": []
+        },
+        {
+            "nom": "Roulette adaptative",
+            "isAdaptative": True,
+            "color": "blue",
+            "values": []
+        }
+    ]
+
+    # Exécution des différentes versions
+    for comp in COMPARATEUR:  # Afficher la distribution des opérateurs pour chaque version
+
+        mean_max, mean_avg, mean_proba_op = algorithm.run(isAdaptative=comp["isAdaptative"])
+        comp["mean_max"] = mean_max
+        comp["mean_avg"] = mean_avg
+        comp["mean_proba_op"] = mean_proba_op
+        if comp["isAdaptative"]:
+            visualiser.mutation_op_distribution(mean_max, mean_avg, mean_proba_op, algorithm)
+
+    # Comparaison des deux roulettes sur le même graphique
+    visualiser.compare_roulettes(COMPARATEUR)
 
 
 if __name__ == '__main__':
