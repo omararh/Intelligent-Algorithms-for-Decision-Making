@@ -3,6 +3,7 @@
 \usepackage[T1]{fontenc}
 \usepackage[french]{babel}
 \usepackage{graphicx}
+\usepackage{hyperref}
 
 \title{Algorithmes Génétiques}
 \author{Omar Arharbi}
@@ -11,6 +12,9 @@
 \begin{document}
 
 \maketitle
+
+\tableofcontents  % Ajout de la table des matières
+\newpage  % Saut de page pour que la table des matières soit bien séparée du contenu
 
 \section{Introduction}
 \subsection{Algorithmes évolutionnaires}
@@ -105,13 +109,13 @@ f(L_{opt}) = 10
 
 Un algorithme génétique efficace devrait converger vers cette solution optimale, produisant des individus (listes) composés uniquement de 1, atteignant ainsi la fitness maximale égale à $N$.
 
-\subsection{Présentation des trois méthodes étudiées}
+\section{Présentation des trois méthodes étudiées}
 Afin de résoudre le problème du One-Max, nous avons implémenté différents algorithmes évolutionnaires.
 
-\subsubsection{Algorithme génétique steady state}
+\subsection{Algorithme génétique steady state}
 L'algorithme steady state est conçu pour choisir un nombre spécifique d'individus à chaque génération, généralement deux, mais ce nombre peut être étendu. L'initialisation de la population peut se faire de manière fixe ou aléatoire.
 
-\paragraph{Méthodes de sélection}
+\subsubsection{Méthodes de sélection}
 
 Pour sélectionner N individus, plusieurs approches sont possibles :
 
@@ -122,7 +126,7 @@ Pour sélectionner N individus, plusieurs approches sont possibles :
     \item \textbf{Sélection aléatoire :} N individus sont choisis au hasard dans la population.
 \end{itemize}
 
-\paragraph{Techniques de croisement}
+\subsubsection{Techniques de croisement}
 
 Les individus sélectionnés subissent un croisement selon diverses méthodes :
 
@@ -132,7 +136,7 @@ Les individus sélectionnés subissent un croisement selon diverses méthodes :
     \item \textbf{Croisement uniforme :} Chaque caractéristique est héritée indépendamment d'un parent ou de l'autre.
 \end{itemize}
 
-\paragraph{Opérations de mutation}
+\subsubsection{Opérations de mutation}
 
 Après le croisement, chaque individu a une probabilité P de subir une mutation :
 
@@ -142,21 +146,25 @@ Après le croisement, chaque individu a une probabilité P de subir une mutation
     \item \textbf{Mutation k-flip :} k bits sont sélectionnés et modifiés au hasard.
 \end{itemize}
 
-\paragraph{Renouvellement de la population}
+\subsubsection{Renouvellement de la population}
 
 L'intégration des nouveaux individus dans la population existante peut se baser sur différents critères, tels que l'ancienneté ou la performance des individus.
 
-\paragraph{Critères d'arrêt}
+\subsubsection{Critères d'arrêt}
 
 L'algorithme se termine selon des conditions prédéfinies, comme un nombre maximal de générations ou l'atteinte d'une solution satisfaisante.
 
 
-\textit{\textbf{Pseudo Algo :}}
+\subsubsection{Pseudo Algo}
 
 \includegraphics[width=0.9\linewidth]{steady-pseudo-algo.png}
 
-\subsubsection{Algorithme à estimation de distribution}
-L'algorithme à estimation de distribution vise à estimer la distribution de probabilité des solutions dans l'espace de recherche. Voici un exemple détaillé pour N = 4 et K = 3 :
+\subsection{Algorithme à estimation de distribution}
+\subsubsection{Définition}
+L'algorithme à estimation de distribution vise à estimer la distribution de probabilité des solutions dans l'espace de recherche.
+
+\subsubsection{Exemple}
+Voici un exemple détaillé pour N = 4 et K = 3 :
 
 \begin{enumerate}
 \item Vecteur de distribution initiale : [0.5, 0.3, 0.7, 0.4]
@@ -191,13 +199,14 @@ L'algorithme à estimation de distribution vise à estimer la distribution de pr
 \end{enumerate}
 On peut observer que le vecteur de probabilité évolue pour favoriser les bits qui apparaissent fréquemment dans les meilleures solutions.
 
-\textbf{\textit{Diagramme et Pseudo algo :}}
+\subsubsection{Diagramme et Pseudo algo :}
 
 \includegraphics[width=0.8\linewidth]{diagrame-distribution-proba.png}
 
 \includegraphics[width=0.9\linewidth]{Estim-distrib-algo.png}
 
-\subsubsection{Algorithme compact}
+\subsection{Algorithme compact}
+\subsubsection{Définition}
 L'algorithme génétique compact (cGA) est une variante minimaliste des algorithmes d'estimation de distribution. Il opère sur un vecteur de probabilité $V$ de taille $N$ initialisé uniformément à 0.5, représentant la probabilité de chaque bit d'être à 1. À chaque génération, seuls deux individus sont générés à partir de ce vecteur, puis comparés pour mettre à jour les probabilités.
 
 La mise à jour du vecteur se fait en comparant le meilleur individu (winner) et le moins bon (loser). Pour chaque position $i$ :
@@ -207,7 +216,8 @@ La mise à jour du vecteur se fait en comparant le meilleur individu (winner) et
     \item Si $\text{winner}[i] = 0$ et $\text{loser}[i] = 1$ : $V[i] \leftarrow V[i] - \frac{1}{N}$
 \end{itemize}
 
-Exemple pour $N = 6$ :
+\subsubsection{Exemple}
+Pour $N = 6$ :
 
 \begin{enumerate}
    \item Vecteur initial : $V = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5]$
@@ -233,10 +243,189 @@ Exemple pour $N = 6$ :
 
 Ce processus est répété jusqu'à convergence ou jusqu'à ce qu'un critère d'arrêt soit atteint.
 
-\textbf{\textit{Diagramme et Pseudo algo :}}
+\subsubsection{Diagramme et Pseudo algo}
 
 \includegraphics[width=0.9\linewidth]{diagram-compact.png}
 
 \includegraphics[width=0.9\linewidth]{compact-pseudo-algo.png}
+
+\subsection{Comparaison/Différences/ressemblances entre les approches}
+
+\includegraphics[width=1.2\linewidth]{image.png}
+
+\section{Analyse des Algorithmes Génétiques}
+
+Pour évaluer l'efficacité et le comportement des algorithmes génétiques, nous adoptons une approche méthodique consistant à modifier un seul paramètre à la fois. Cette méthode nous permet d'isoler l'impact spécifique de chaque variable sur les performances de l'algorithme. Afin d'établir une base de comparaison cohérente, nous avons défini un ensemble de paramètres par défaut :
+
+\begin{itemize}
+    \item \textbf{Structure des individus :} Chaque individu est représenté par une chaîne de 300 bits.
+    \item \textbf{Taille de la population :} L'algorithme opère sur un ensemble de 20 individus.
+    \item \textbf{Opérations génétiques :}
+    \begin{itemize}
+        \item Le croisement est systématiquement appliqué (probabilité de 100\%).
+        \item La mutation est également appliquée à chaque génération (probabilité de 100\%).
+    \end{itemize}
+    \item \textbf{Robustesse statistique :} Chaque configuration est exécutée 30 fois pour assurer la fiabilité des résultats.
+    \item \textbf{Génération initiale :} La population de départ est créée de manière aléatoire.
+    \item \textbf{Sélection parentale :} À chaque itération, deux individus sont choisis pour la reproduction.
+    \item \textbf{Opérateurs génétiques par défaut :}
+    \begin{itemize}
+        \item \textit{Sélection :} Tournoi impliquant 3 individus.
+        \item \textit{Croisement :} Méthode uniforme.
+        \item \textit{Mutation :} Technique du "bit-flip".
+    \end{itemize}
+    \item \textbf{Stratégie de remplacement :} Les nouveaux individus remplacent les moins performants de la génération précédente, favorisant ainsi le renouvellement basé sur la qualité plutôt que sur l'âge.
+\end{itemize}
+
+Ces paramètres constituent notre configuration de référence. Dans notre analyse, nous ferons varier un seul de ces paramètres à la fois, tout en maintenant les autres constants. Cette approche nous permettra d'évaluer précisément l'influence de chaque facteur sur les performances globales de l'algorithme génétique.
+
+\subsection{Algorithme steady state}
+\subsubsection{la taille de la population}
+
+\includegraphics[width=0.9\linewidth]{taille-population.png}
+
+ L'analyse des résultats révèle une corrélation inverse entre la taille de la population et la vitesse de convergence vers une solution optimale. Les populations de taille réduite tendent à atteindre plus rapidement un point de convergence. Ce phénomène s'explique par le processus de sélection : dans un groupe restreint, la probabilité de choisir les individus les plus performants augmente significativement. Par conséquent, les caractéristiques génétiques favorables se propagent plus efficacement aux générations subséquentes.
+
+\subsubsection{Méthodes de séléction}
+\includegraphics[width=0.9\linewidth]{selection-method.png}
+
+\begin{itemize}
+    \item \textbf{Sélection des Meilleurs} montre la convergence la plus rapide, ce qui est logique car elle sélectionne systématiquement les meilleurs individus. Cependant, cette approche pourrait limiter la diversité génétique.
+
+    \item \textbf{Sélection par Tournoi} offre une performance intermédiaire avec une convergence régulière. Elle maintient un bon équilibre entre exploitation des bonnes solutions et exploration.
+
+    \item \textbf{Sélection par Roulette} et \textbf{Sélection Aléatoire} montrent des performances similaires et plus lentes, mais finissent par atteindre des résultats comparables aux autres méthodes après 1500 générations.
+\end{itemize}
+
+\paragraph{Conclusion} Si l'objectif est d'obtenir rapidement de bons résultats, la sélection des meilleurs est préférable. Cependant, la sélection par tournoi offre un meilleur compromis entre vitesse de convergence et maintien de la diversité. Les méthodes de roulette et aléatoire, bien que plus lentes, peuvent être utiles dans des problèmes où l'exploration de l'espace de recherche est cruciale.
+
+\subsubsection{Méthodes de croissement}
+\includegraphics[width=0.9\linewidth]{crossOver-methods.png}
+
+\begin{itemize}
+    \item \textbf{Croisement Uniforme} montre la convergence la plus rapide. Cette performance supérieure peut s'expliquer par sa capacité à échanger des bits de manière plus uniforme sur l'ensemble de la chaîne.
+
+    \item \textbf{Croisement Deux Points} offre une performance intermédiaire, légèrement meilleure que le croisement un point mais moins efficace que le croisement uniforme.
+
+    \item \textbf{Croisement Un Point} présente la convergence la plus lente, bien qu'il finisse par atteindre des résultats similaires aux autres méthodes après 1500 générations.
+\end{itemize}
+
+\paragraph{Conclusion} Le croisement uniforme apparaît comme la méthode la plus efficace pour ce problème, probablement parce qu'il permet une meilleure exploitation des bonnes solutions en offrant plus de possibilités de combinaisons entre les parents. Les croisements à un et deux points, bien que moins performants initialement, restent viables car ils atteignent finalement la même qualité de solution.
+
+\subsubsection{Méthodes de mutations}
+
+\includegraphics[width=0.9\linewidth]{mutation-methods.png}
+
+\begin{itemize}
+    \item \textbf{Un Flip} (mutation d'un seul bit) montre une convergence légèrement plus rapide jusqu'à la génération 750 et atteint la meilleure performance finale.
+
+    \item \textbf{Bit Flip} (mutation probabiliste de chaque bit) présente une performance similaire à Un Flip, avec une convergence un peu plus lente initialement mais rattrapant son retard après 1250 générations.
+
+    \item \textbf{Trois Flips} offre une performance intermédiaire, légèrement inférieure aux deux premières méthodes.
+
+    \item \textbf{Cinq Flips} montre la performance la plus faible, avec un écart significatif par rapport aux autres méthodes qui se maintient jusqu'à la fin.
+\end{itemize}
+
+\paragraph{Conclusion} On observe une corrélation claire entre le nombre de bits mutés et la performance : plus le nombre de bits mutés est important, moins la performance est bonne. Cela suggère que des mutations trop importantes peuvent être déstabilisantes pour le problème OneMax. Les méthodes Un Flip et Bit Flip, qui modifient moins de bits en moyenne, semblent offrir le meilleur compromis entre exploration et exploitation.
+
+\subsection{Algorithme à estimation de distribution}
+L'algorithme à estimation de distribution offre une flexibilité intéressante dans le paramétrage du processus évolutif. Un aspect clé de cette flexibilité réside dans la possibilité d'ajuster le nombre d'individus considérés comme "élites" ou "parents" à chaque génération. Ce paramètre joue un rôle crucial dans la dynamique de l'algorithme, influençant directement la rapidité avec laquelle il converge vers une solution optimale.
+
+Le mécanisme central de cet algorithme repose sur la mise à jour du vecteur de probabilité. Cette mise à jour s'effectue en calculant la moyenne des caractéristiques (bits) des individus sélectionnés comme parents. Ainsi, le choix du nombre de parents impacte directement la façon dont l'information génétique est transmise et exploitée au fil des générations.
+
+Un autre paramètre d'intérêt est la taille globale de la population. Il est pertinent d'examiner comment les variations de cette taille interagissent avec le nombre d'individus sélectionnés comme parents. Cette analyse permet de comprendre si une population plus large nécessite proportionnellement plus de parents pour maintenir une diversité génétique optimale, ou si un petit groupe d'élites suffit, quelle que soit la taille de la population.
+
+Ces considérations ouvrent la voie à une exploration approfondie des dynamiques de l'algorithme, permettant d'optimiser son efficacité en fonction des spécificités du problème à résoudre.
+
+\subsubsection{Nombre de meilleures individus (K best)}
+\includegraphics[width=0.9\linewidth]{NB-k-best-individus.png}
+
+Avec une taille de population = 30, l'analyse des performances de l'algorithme à estimation de distribution révèle des dynamiques intéressantes en fonction du nombre d'individus sélectionnés comme parents. Dans le contexte d'une population standard de 30 individus, on constate que la sélection d'un groupe de 4 à 8 parents semble offrir les meilleurs résultats.
+
+Lors des phases initiales de l'évolution, une sélection restreinte à quatre parents démontre une efficacité supérieure. Cette approche conservatrice minimise le risque d'inclure des individus sous-optimaux dans le pool génétique parental, assurant ainsi une convergence rapide vers des solutions prometteuses.
+
+Cependant, à mesure que l'algorithme progresse, on observe une homogénéisation croissante de la population. Un nombre croissant d'individus atteint des niveaux de fitness proches du maximum observé. Dans ce contexte d'amélioration globale, l'élargissement du groupe parental à huit individus devient avantageux. Cette stratégie permet d'exploiter une plus grande diversité génétique tout en maintenant une qualité élevée des parents sélectionnés.
+
+
+En revanche, l'extension du groupe parental à 14 individus s'avère contre-productive. Cette approche trop inclusive risque d'intégrer des individus de moindre qualité dans le processus de reproduction, diluant ainsi l'efficacité de la sélection et potentiellement ralentissant la convergence vers des solutions optimales.
+
+\subsubsection{Augementation de taille de la population}
+\textbf{Taille = 90}
+
+\includegraphics[width=0.9\linewidth]{taill-population.png}
+
+On remarque ici qu'ici la selection de 14 parents devient plus intéressantes.
+
+\subsubsection{Algorithme génétique compact}
+
+Pour accélérer la convergence de l'algorithme, il est possible d'introduire un coefficient d'apprentissage $\alpha$. Par défaut, $\alpha = 1$, mais sa valeur peut être ajustée pour modifier la vitesse d'apprentissage. Avec ce coefficient, la formule de mise à jour devient :
+
+\[
+    \omega_i = \omega_i + \alpha \cdot \frac{1}{N} \cdot (winner_i - loser_i)
+\]
+
+Cette formulation permet un contrôle plus fin de l'évolution du vecteur de probabilité, offrant la possibilité d'ajuster la balance entre exploration et exploitation dans l'espace de recherche, et bien sur en fonction du $\alpha$ en modifie le nombre maixmum de génération.
+
+\subsubsection{Taux d'apprentissage a 1 ($\alpha$ = 1)}
+\includegraphics[width=0.9\linewidth]{compact-algo.png}
+
+L'expérimentation montre l'évolution de la fitness sur 7000 générations avec deux métriques principales :
+
+\begin{itemize}
+    \item \textbf{Convergence globale :} L'algorithme atteint une fitness proche de 300 (l'optimum) après environ 7000 générations, démontrant sa capacité à trouver la solution optimale, mais la progression reste lente.
+
+    \item \textbf{Écart fitness max/moyenne :} L'écart entre la fitness maximale et moyenne reste relativement constant tout au long de l'évolution, indiquant une bonne stabilité de l'algorithme et une bonne diversité de population.
+
+    \item \textbf{oscillations :} Les oscillations observées dans les courbes sont dues à la mise à jour progressive du vecteur de probabilité, qui détermine la génération des individus. À chaque génération, le vecteur est ajusté en fonction du gagnant et du perdant de la sélection, mais ces mises à jour ne sont pas continues ni uniformes, ce qui entraîne des fluctuations locales dans la fitness. De plus, ici on ne maintient pas une population explicite mais on ajuste uniquement des probabilités.
+\end{itemize}
+
+\paragraph{Conclusion} L'algorithme montre une progression stable et constante vers l'optimum, caractéristique typique du cGA. La convergence est plus lente qu'un algorithme génétique classique et donc on a besoin d'un nombre de générations supérieure de ce qu'on a vu auparavant ce nombre qui peut diminuer en augementant le taux d'apprentissage $\alpha$.
+
+\subsubsection{Augementation du taux d'apprentissage ($\alpha$ = 2)}
+
+\includegraphics[width=0.9\linewidth]{compact-augemente-alpha.png}
+
+L'augmentation du taux d'apprentissage à 2 a permis une convergence plus rapide, réduisant le nombre de générations nécessaires pour atteindre la fitness maximale de 300 or ici on a eu besoin que de 3500 générations pour converger. Cependant, cette accélération entraîne des oscillations plus marquées en début de progression, dues aux mises à jour plus agressives du vecteur de probabilité. Globalement, le compromis entre vitesse de convergence et stabilité est bien visible, avec une convergence plus rapide mais des variations plus prononcées dans les premières phases de l'évolution.
+
+\section{Sélection automatique de l’opérateur de mutation}
+
+L'algorithme génétique steady state peut être optimisé en introduisant une sélection dynamique des opérateurs de mutation. Plutôt que d'utiliser exclusivement la mutation bit-flip par défaut, qui est sous-optimale dans les phases initiales de l'évolution, cette approche propose une adaptation en temps réel du choix de l'opérateur de mutation.
+
+Cette amélioration permet à l'algorithme de sélectionner l'opérateur de mutation le plus approprié pour chaque individu, en tenant compte de son efficacité et de l'état actuel de la population. Pour mettre en œuvre cette stratégie adaptative, deux méthodes ont été développées : la roulette adaptative et l'algorithme UCB (Upper Confidence Bound).
+
+Ces techniques d'adaptation dynamique visent à optimiser la performance de l'algorithme en ajustant continuellement la stratégie de mutation en fonction des résultats observés, permettant ainsi une exploration plus efficace de l'espace de recherche.
+
+\subsection{Roulette adaptative}
+\subsubsection{Définition}
+
+La méthode de la roulette adaptative implémente une stratégie d'optimisation dynamique des opérateurs de mutation. Elle utilise un ensemble $\Omega = \{o_1, \ldots, o_n\}$, où chaque $o_i$ représente un opérateur de mutation distinct. À chaque opérateur est associée une probabilité de sélection, stockée dans un vecteur $\theta$.
+
+L'efficacité $u^t_i$ d'un opérateur $o_i$ à l'instant $t$ est évaluée selon la formule :
+
+\begin{equation}
+    u^t_i = (1 - \alpha)u^{t-1}_i + \alpha \cdot g(o_i, s_0, \ldots, s_{t-1})
+\end{equation}
+
+où :
+\begin{itemize}
+    \item $\alpha$ est un facteur d'apprentissage
+    \item $u^0_i = 0$ (valeur initiale)
+    \item $g(o_i, s_0, \ldots, s_{t-1}) = \max(0, \text{nouvelle fitness} - \text{ancienne fitness})$ représente le gain de l'opérateur
+\end{itemize}
+
+La probabilité de sélection $\sigma^{t+1}_i$ d'un opérateur pour l'instant $t+1$ est calculée comme suit :
+
+\begin{equation}
+    \sigma^{t+1}_i = p_{\text{min}} + (1 - n \cdot p_{\text{min}}) \cdot \frac{u^{t+1}_i}{\sum_{k=1}^n u^{t+1}_k}
+\end{equation}
+
+où $p_{\text{min}}$ est une probabilité minimale garantie pour chaque opérateur.
+
+\subsubsection{pseudo algo}
+\includegraphics[width=0.9\linewidth]{roulete-adaptive-pseudo-algo.png}
+
+\subsection{Analyse expérimentale}
+
+\includegraphics[width=1.2\linewidth]{flips.png}
 
 \end{document}
