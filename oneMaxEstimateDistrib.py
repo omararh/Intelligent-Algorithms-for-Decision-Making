@@ -19,7 +19,7 @@ class AlgorithmConfig:
 @dataclass
 class ExperimentConfig:
     """Configuration pour une expérience"""
-    nb_selected: int
+    nb_selected: int  # k best a selectionner
     name: str
     color: str
     values: List[float] = None
