@@ -98,9 +98,10 @@ class AdaptiveRoulette:
 class GeneticAlgorithm:
     """Classe principale de l'algorithme génétique"""
 
-    def __init__(self, config: GeneticAlgorithmConfig, isMasked=False):
+    def __init__(self, config: GeneticAlgorithmConfig, isMasked=False, isLeadingOnes=False):
         self.config = config
         self.isMasked = isMasked
+        self.isLeadingOnes = isLeadingOnes
         self.toolbox = self._setup_toolbox()
         self.roulette = AdaptiveRoulette(config)
         self.masque = [random.choice([0, 1]) for _ in range(GeneticAlgorithmConfig.one_max_length)]
@@ -122,7 +123,15 @@ class GeneticAlgorithm:
                          list, toolbox.individualCreator)
 
         # Opérateurs génétiques
-        toolbox.register("evaluate", self._evaluate_masked if self.isMasked else self._evaluate)
+        # toolbox.register("evaluate", self._evaluate_masked if self.isMasked else self._evaluate)
+        match True:
+            case _ if self.isMasked:
+                toolbox.register("evaluate", self._evaluate_masked)
+            case _ if self.isLeadingOnes:
+                toolbox.register("evaluate", self._evaluate_leading_ones)
+            case _:
+                toolbox.register("evaluate", self._evaluate)
+
         toolbox.register("select", tools.selTournament, tournsize=3)
         toolbox.register("worst", tools.selWorst, fit_attr='fitness')
 
@@ -138,6 +147,16 @@ class GeneticAlgorithm:
         for i in range(0, GeneticAlgorithmConfig.one_max_length):
             sum += individual[i] * self.masque[i]
         return sum,
+
+    @staticmethod
+    def _evaluate_leading_ones(individual: List[int]) -> Tuple[float]:
+        count = 0
+        for bit in individual:
+            if bit == 1:
+                count += 1
+            else:
+                break
+        return count,
 
     def _insertion_best_fitness(self, population: List, offspring: List) -> List:
         """Insertion des meilleurs individus dans la population"""
@@ -286,6 +305,7 @@ def main():
     """Point d'entrée principal"""
     config = GeneticAlgorithmConfig()
     # Pour appliquer le masque GeneticAlgorithm(config, isMasked=True)
+    # Pour leadingOnes GeneticAlgorithm(config, isMasked=True)
     algorithm = GeneticAlgorithm(config)
     visualiser = Visualiser()
 
