@@ -71,8 +71,10 @@ class AdaptiveRoulette:
         self.operator_names = ['bit-flip', '1-flip', '3-flip', '5-flip']
         self.prob_dist = [1 / len(self.operators)] * len(self.operators)
 
-    def choose_operator(self) -> Callable:
+    def choose_operator(self, isAdaptative=True) -> Callable:
         """Sélectionne un opérateur selon la distribution de probabilité"""
+        if not isAdaptative:
+            return MutationOperator.bit_flip
         return random.choices(self.operators, weights=self.prob_dist)[0]
 
     def update_probabilities(self, utilities: List[List[float]]) -> None:
@@ -168,7 +170,7 @@ class GeneticAlgorithm:
             offspring = list(map(self.toolbox.clone, self.toolbox.select(population, 2)))
 
             # Application de l'opérateur de mutation choisi
-            operator = self.roulette.choose_operator()
+            operator = self.roulette.choose_operator(isAdaptative)
             for individual in offspring:
                 if random.random() < self.config.p_mutation:
                     operator(individual)
@@ -197,7 +199,7 @@ class GeneticAlgorithm:
                 self.roulette.calculate_utility(operator, utilities, gains)
                 self.roulette.update_probabilities(utilities)
 
-                # Enregistrement des valeurs
+            # Enregistrement des valeurs
             for i in range(len(self.roulette.operators)):
                 proba_distrib_values[i].append(self.roulette.prob_dist[i])
             max_fitness_values.append(max_fitness)
@@ -248,7 +250,7 @@ class Visualiser:
                                  mean_proba_op: List[List[float]], algorithm) -> None:
         # Graphique des distributions
         plt.figure(figsize=(10, 6))
-        colors = ['yellow', 'black', 'pink', 'green']
+        colors = ['red', 'black', 'pink', 'purple']
         for i, (proba, name) in enumerate(zip(mean_proba_op,
                                               algorithm.roulette.operator_names)):
             plt.plot(proba, color=colors[i], label=name)
@@ -283,13 +285,13 @@ def main():
         {
             "nom": "Roulette fixe",
             "isAdaptative": False,
-            "color": "black",
+            "color": "red",
             "values": []
         },
         {
             "nom": "Roulette adaptative",
             "isAdaptative": True,
-            "color": "blue",
+            "color": "purple",
             "values": []
         }
     ]

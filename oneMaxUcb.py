@@ -52,6 +52,10 @@ class MutationOperators:
             if random.random() < 1 / len(individual):
                 individual[i] = MutationOperators.flip(individual[i])
 
+    @staticmethod
+    def useless(individual: List[int]) -> None:
+        pass
+
 
 class UCBAlgorithm:
     """Classe principale pour l'algorithme UCB"""
@@ -63,7 +67,8 @@ class UCBAlgorithm:
             MutationOperators.bit_flip,
             MutationOperators.one_flip,
             MutationOperators.trois_flips,
-            MutationOperators.cinq_flips
+            MutationOperators.cinq_flips,
+            MutationOperators.useless,
         ]
 
     def _setup_toolbox(self) -> base.Toolbox:
@@ -278,8 +283,8 @@ class UCBAlgorithm:
 
         # Second graphique: Distribution des opérateurs
         plt.figure(figsize=(10, 6))
-        colors = ['blue', 'red', 'green', 'black']
-        labels = ['bit-flip', '1-flip', '3-flip', '5-flip']
+        colors = ['purple', 'pink', 'red', 'black', 'blue']
+        labels = ['bit-flip', '1-flip', '3-flip', '5-flip', 'useless']
 
         for op_proba, color, label in zip(mean_proba_op, colors, labels):
             plt.plot(op_proba, color=color, label=label)
