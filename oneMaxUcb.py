@@ -52,24 +52,28 @@ class MutationOperators:
             if random.random() < 1 / len(individual):
                 individual[i] = MutationOperators.flip(individual[i])
 
+    '''
     @staticmethod
     def useless(individual: List[int]) -> None:
         pass
+    '''
 
 
 class UCBAlgorithm:
     """Classe principale pour l'algorithme UCB"""
 
-    def __init__(self, config: Config):
+    def __init__(self, config: Config, isMasked=False):
         self.config = config
+        self.isMasked = isMasked
         self.toolbox = self._setup_toolbox()
         self.operators = [
             MutationOperators.bit_flip,
             MutationOperators.one_flip,
             MutationOperators.trois_flips,
             MutationOperators.cinq_flips,
-            MutationOperators.useless,
+            # MutationOperators.useless,
         ]
+        self.masque = [random.choice([0, 1]) for _ in range(Config.one_max_length)]
 
     def _setup_toolbox(self) -> base.Toolbox:
         """Configuration initiale du toolbox DEAP"""
@@ -90,7 +94,7 @@ class UCBAlgorithm:
                          tools.initRepeat,
                          list,
                          toolbox.individualCreator)
-        toolbox.register("evaluate", self._one_max_fitness)
+        toolbox.register("evaluate", self._one_max_fitness_masked if self.isMasked else self._one_max_fitness)
         toolbox.register("select", tools.selTournament, tournsize=3)
         toolbox.register("worst", tools.selWorst, fit_attr='fitness')
 
@@ -173,6 +177,12 @@ class UCBAlgorithm:
     def _one_max_fitness(individual: List[int]) -> Tuple[int]:
         """Calcul de la fitness"""
         return sum(individual),
+
+    def _one_max_fitness_masked(self, individual: List[int]) -> Tuple[float]:
+        sum = 0
+        for i in range(0, Config.one_max_length):
+            sum += individual[i] * self.masque[i]
+        return sum,
 
     def _normalize_array(self, gain: List[List[float]]) -> List[List[float]]:
         """Normalisation des gains"""
@@ -283,8 +293,10 @@ class UCBAlgorithm:
 
         # Second graphique: Distribution des opérateurs
         plt.figure(figsize=(10, 6))
-        colors = ['purple', 'pink', 'red', 'black', 'blue']
-        labels = ['bit-flip', '1-flip', '3-flip', '5-flip', 'useless']
+        # colors = ['purple', 'pink', 'red', 'black', 'blue']
+        colors = ['purple', 'pink', 'red', 'black']
+        # labels = ['bit-flip', '1-flip', '3-flip', '5-flip', 'useless']
+        labels = ['bit-flip', '1-flip', '3-flip', '5-flip']
 
         for op_proba, color, label in zip(mean_proba_op, colors, labels):
             plt.plot(op_proba, color=color, label=label)
@@ -304,7 +316,8 @@ def main():
     config = Config()
 
     # Création et exécution de l'algorithme
-    ucb = UCBAlgorithm(config)
+    # Pour appliquer le masque UCBAlgorithm(config, isMasked=True)
+    ucb = UCBAlgorithm(config, isMasked=True)
     mean_max_fitness, mean_mean_fitness, mean_proba_op = ucb.run()
 
     # Affichage des résultats
