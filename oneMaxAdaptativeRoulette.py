@@ -98,10 +98,12 @@ class AdaptiveRoulette:
 class GeneticAlgorithm:
     """Classe principale de l'algorithme génétique"""
 
-    def __init__(self, config: GeneticAlgorithmConfig):
+    def __init__(self, config: GeneticAlgorithmConfig, isMasked=False):
         self.config = config
+        self.isMasked = isMasked
         self.toolbox = self._setup_toolbox()
         self.roulette = AdaptiveRoulette(config)
+        self.masque = [random.choice([0, 1]) for _ in range(GeneticAlgorithmConfig.one_max_length)]
 
     def _setup_toolbox(self) -> base.Toolbox:
         """Configure la boîte à outils DEAP"""
@@ -120,7 +122,7 @@ class GeneticAlgorithm:
                          list, toolbox.individualCreator)
 
         # Opérateurs génétiques
-        toolbox.register("evaluate", self._evaluate)
+        toolbox.register("evaluate", self._evaluate_masked if self.isMasked else self._evaluate)
         toolbox.register("select", tools.selTournament, tournsize=3)
         toolbox.register("worst", tools.selWorst, fit_attr='fitness')
 
@@ -130,6 +132,12 @@ class GeneticAlgorithm:
     def _evaluate(individual: List[int]) -> Tuple[float]:
         """Fonction d'évaluation"""
         return sum(individual),
+
+    def _evaluate_masked(self, individual: List[int]) -> Tuple[float]:
+        sum = 0
+        for i in range(0, GeneticAlgorithmConfig.one_max_length):
+            sum += individual[i] * self.masque[i]
+        return sum,
 
     def _insertion_best_fitness(self, population: List, offspring: List) -> List:
         """Insertion des meilleurs individus dans la population"""
@@ -277,6 +285,7 @@ class Visualiser:
 def main():
     """Point d'entrée principal"""
     config = GeneticAlgorithmConfig()
+    # Pour appliquer le masque GeneticAlgorithm(config, isMasked=True)
     algorithm = GeneticAlgorithm(config)
     visualiser = Visualiser()
 
