@@ -62,9 +62,10 @@ class MutationOperators:
 class UCBAlgorithm:
     """Classe principale pour l'algorithme UCB"""
 
-    def __init__(self, config: Config, isMasked=False):
+    def __init__(self, config: Config, isMasked=False, isLeadingOnes=False):
         self.config = config
         self.isMasked = isMasked
+        self.isLeadingOnes = isLeadingOnes
         self.toolbox = self._setup_toolbox()
         self.operators = [
             MutationOperators.bit_flip,
@@ -94,7 +95,15 @@ class UCBAlgorithm:
                          tools.initRepeat,
                          list,
                          toolbox.individualCreator)
-        toolbox.register("evaluate", self._one_max_fitness_masked if self.isMasked else self._one_max_fitness)
+        # toolbox.register("evaluate", self._one_max_fitness_masked if self.isMasked else self._one_max_fitness)
+        match True:
+            case _ if self.isMasked:
+                toolbox.register("evaluate", self._one_max_fitness_masked)
+            case _ if self.isLeadingOnes:
+                toolbox.register("evaluate", self._one_max_fitness_masked_leading_ones)
+            case _:
+                toolbox.register("evaluate", self._one_max_fitness)
+
         toolbox.register("select", tools.selTournament, tournsize=3)
         toolbox.register("worst", tools.selWorst, fit_attr='fitness')
 
@@ -183,6 +192,16 @@ class UCBAlgorithm:
         for i in range(0, Config.one_max_length):
             sum += individual[i] * self.masque[i]
         return sum,
+
+    @staticmethod
+    def _one_max_fitness_masked_leading_ones(individual: List[int]) -> Tuple[float]:
+        count = 0
+        for bit in individual:
+            if bit == 1:
+                count += 1
+            else:
+                break
+        return count,
 
     def _normalize_array(self, gain: List[List[float]]) -> List[List[float]]:
         """Normalisation des gains"""
@@ -317,7 +336,8 @@ def main():
 
     # Création et exécution de l'algorithme
     # Pour appliquer le masque UCBAlgorithm(config, isMasked=True)
-    ucb = UCBAlgorithm(config, isMasked=True)
+    # Pour appliquer le masque UCBAlgorithm(config, isLeadingOnes=True)
+    ucb = UCBAlgorithm(config)
     mean_max_fitness, mean_mean_fitness, mean_proba_op = ucb.run()
 
     # Affichage des résultats
