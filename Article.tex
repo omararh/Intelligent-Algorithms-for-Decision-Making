@@ -21,10 +21,6 @@
 
 Les algorithmes évolutionnaires représentent une approche bio-inspirée de l'optimisation. Ils constituent une méthode d'optimisation innovante, puisant son inspiration dans les principes de l'évolution biologique. Cette approche vise à résoudre des problèmes complexes en simulant le processus d'évolution naturelle.
 
-\subsubsection{Principe fondamental}
-
-Au cour of these algorithms, the concept of "population" is found - an ensemble of solutions potentielles au problème donné. Chaque solution, ou "individu", possède des caractéristiques uniques qui déterminent son adaptation à l'environnement du problème.
-
 \subsubsection{Processus itératif}
 
 L'algorithme fonctionne de manière itérative, suivant ces étapes clés :
@@ -155,7 +151,7 @@ L'intégration des nouveaux individus dans la population existante peut se baser
 L'algorithme se termine selon des conditions prédéfinies, comme un nombre maximal de générations ou l'atteinte d'une solution satisfaisante.
 
 
-\subsubsection{Pseudo Algo}
+\subsubsection{Pseudo code}
 
 \includegraphics[width=0.9\linewidth]{steady-pseudo-algo.png}
 
@@ -199,9 +195,7 @@ Voici un exemple détaillé pour N = 4 et K = 3 :
 \end{enumerate}
 On peut observer que le vecteur de probabilité évolue pour favoriser les bits qui apparaissent fréquemment dans les meilleures solutions.
 
-\subsubsection{Diagramme et Pseudo algo :}
-
-\includegraphics[width=0.8\linewidth]{diagrame-distribution-proba.png}
+\subsubsection{Pseudo code}
 
 \includegraphics[width=0.9\linewidth]{Estim-distrib-algo.png}
 
@@ -243,7 +237,7 @@ Pour $N = 6$ :
 
 Ce processus est répété jusqu'à convergence ou jusqu'à ce qu'un critère d'arrêt soit atteint.
 
-\subsubsection{Diagramme et Pseudo algo}
+\subsubsection{Diagramme et Pseudo code}
 
 \includegraphics[width=0.9\linewidth]{diagram-compact.png}
 
@@ -252,6 +246,8 @@ Ce processus est répété jusqu'à convergence ou jusqu'à ce qu'un critère d'
 \subsection{Comparaison/Différences/ressemblances entre les approches}
 
 \includegraphics[width=1.2\linewidth]{image.png}
+
+Ces trois algorithmes partagent l'objectif d'optimisation évolutionnaire mais diffèrent dans leur approche de gestion de la population. L'algorithme génétique steady-state est le plus "classique" : il maintient une population constante et ne remplace que quelques individus à chaque génération via les opérateurs traditionnels (croisement et mutation). L'algorithme génétique compact (cGA) représente l'autre extrême : il simule une population via un simple vecteur de probabilités, sans maintenir de population réelle, ce qui le rend très économe en mémoire. L'algorithme à estimation de distribution (EDA) se situe entre les deux : comme le cGA, il utilise un modèle probabiliste, mais il est plus sophistiqué car il capture les dépendances entre les variables et maintient une vraie population. Le steady-state modifie sa population progressivement, tandis que l'EDA génère une population entièrement nouvelle à chaque génération en échantillonnant son modèle probabiliste. Le cGA peut être vu comme un cas particulier d'EDA avec une population minimale et un modèle probabiliste très simple.
 
 \section{Analyse des Algorithmes Génétiques}
 
@@ -299,11 +295,11 @@ Ces paramètres constituent notre configuration de référence. Dans notre analy
 
 \paragraph{Conclusion} Si l'objectif est d'obtenir rapidement de bons résultats, la sélection des meilleurs est préférable. Cependant, la sélection par tournoi offre un meilleur compromis entre vitesse de convergence et maintien de la diversité. Les méthodes de roulette et aléatoire, bien que plus lentes, peuvent être utiles dans des problèmes où l'exploration de l'espace de recherche est cruciale.
 
-\subsubsection{Méthodes de croissement}
+\subsubsection{Méthodes de croisement}
 \includegraphics[width=0.9\linewidth]{crossOver-methods.png}
 
 \begin{itemize}
-    \item \textbf{Croisement Uniforme} montre la convergence la plus rapide. Cette performance supérieure peut s'expliquer par sa capacité à échanger des bits de manière plus uniforme sur l'ensemble de la chaîne.
+    \item \textbf{Croisement Uniforme} montre la convergence la plus rapide. Cette performance supérieur peut s'expliquer par sa capacité à échanger des bits de manière plus uniforme sur l'ensemble de la chaîne.
 
     \item \textbf{Croisement Deux Points} offre une performance intermédiaire, légèrement meilleure que le croisement un point mais moins efficace que le croisement uniforme.
 
@@ -342,21 +338,21 @@ Ces considérations ouvrent la voie à une exploration approfondie des dynamique
 
 Avec une taille de population = 30, l'analyse des performances de l'algorithme à estimation de distribution révèle des dynamiques intéressantes en fonction du nombre d'individus sélectionnés comme parents. Dans le contexte d'une population standard de 30 individus, on constate que la sélection d'un groupe de 4 à 8 parents semble offrir les meilleurs résultats.
 
-Lors des phases initiales de l'évolution, une sélection restreinte à quatre parents démontre une efficacité supérieure. Cette approche conservatrice minimise le risque d'inclure des individus sous-optimaux dans le pool génétique parental, assurant ainsi une convergence rapide vers des solutions prometteuses.
+Lors des phases initiales de l'évolution, une sélection restreinte à quatre parents démontre une efficacité supérieur. Cette approche conservatrice minimise le risque d'inclure des individus sous-optimaux dans le pool génétique parental, assurant ainsi une convergence rapide vers des solutions prometteuses.
 
 Cependant, à mesure que l'algorithme progresse, on observe une homogénéisation croissante de la population. Un nombre croissant d'individus atteint des niveaux de fitness proches du maximum observé. Dans ce contexte d'amélioration globale, l'élargissement du groupe parental à huit individus devient avantageux. Cette stratégie permet d'exploiter une plus grande diversité génétique tout en maintenant une qualité élevée des parents sélectionnés.
 
 
 En revanche, l'extension du groupe parental à 14 individus s'avère contre-productive. Cette approche trop inclusive risque d'intégrer des individus de moindre qualité dans le processus de reproduction, diluant ainsi l'efficacité de la sélection et potentiellement ralentissant la convergence vers des solutions optimales.
 
-\subsubsection{Augementation de taille de la population}
+\subsubsection{Augmentation de taille de la population}
 \textbf{Taille = 90}
 
 \includegraphics[width=0.9\linewidth]{taill-population.png}
 
 On remarque ici qu'ici la selection de 14 parents devient plus intéressantes.
 
-\subsubsection{Algorithme génétique compact}
+\subsection{Algorithme génétique compact}
 
 Pour accélérer la convergence de l'algorithme, il est possible d'introduire un coefficient d'apprentissage $\alpha$. Par défaut, $\alpha = 1$, mais sa valeur peut être ajustée pour modifier la vitesse d'apprentissage. Avec ce coefficient, la formule de mise à jour devient :
 
@@ -379,9 +375,9 @@ L'expérimentation montre l'évolution de la fitness sur 7000 générations avec
     \item \textbf{oscillations :} Les oscillations observées dans les courbes sont dues à la mise à jour progressive du vecteur de probabilité, qui détermine la génération des individus. À chaque génération, le vecteur est ajusté en fonction du gagnant et du perdant de la sélection, mais ces mises à jour ne sont pas continues ni uniformes, ce qui entraîne des fluctuations locales dans la fitness. De plus, ici on ne maintient pas une population explicite mais on ajuste uniquement des probabilités.
 \end{itemize}
 
-\paragraph{Conclusion} L'algorithme montre une progression stable et constante vers l'optimum, caractéristique typique du cGA. La convergence est plus lente qu'un algorithme génétique classique et donc on a besoin d'un nombre de générations supérieure de ce qu'on a vu auparavant ce nombre qui peut diminuer en augementant le taux d'apprentissage $\alpha$.
+\paragraph{Conclusion} L'algorithme montre une progression stable et constante vers l'optimum, caractéristique typique du cGA. La convergence est plus lente qu'un algorithme génétique classique et donc on a besoin d'un nombre de générations supérieur de ce qu'on a vu auparavant ce nombre qui peut diminuer en augementant le taux d'apprentissage $\alpha$.
 
-\subsubsection{Augementation du taux d'apprentissage ($\alpha$ = 2)}
+\subsubsection{Augmentation du taux d'apprentissage ($\alpha$ = 2)}
 
 \includegraphics[width=0.9\linewidth]{compact-augemente-alpha.png}
 
@@ -421,11 +417,21 @@ La probabilité de sélection $\sigma^{t+1}_i$ d'un opérateur pour l'instant $t
 
 où $p_{\text{min}}$ est une probabilité minimale garantie pour chaque opérateur.
 
-\subsubsection{pseudo algo}
+\subsubsection{pseudo code}
 \includegraphics[width=0.9\linewidth]{roulete-adaptive-pseudo-algo.png}
 
 \subsection{Analyse expérimentale}
 
-\includegraphics[width=1.2\linewidth]{flips.png}
+\subsubsection{Comparaison entre les différents opérateurs de mutation}
+\includegraphics[width=0.9\linewidth]{roullette.png}
+
+Dans l'évolution d'un algorithme génétique, les stratégies de mutation varient selon le stade de progression. Durant les 350 premières générations, les opérateurs 3-flip et 5-flip sont privilégiés en raison de leur capacité à introduire des changements significatifs. Après ce seuil, les opérateurs 1-flip et bit-flip deviennent plus efficaces, car la probabilité de modifier un bit à zéro devient plus faible, nécessitant des mutations plus précises et ciblées pour continuer l'optimisation.
+
+\subsubsection{Comparaison de la roulette adaptative et la roulette fixe}
+\includegraphics[width=0.9\linewidth]{analyse-roulette.png}
+
+La comparaison entre la roulette adaptative (en violet) et la roulette fixe utilisant uniquement le bit-flip (en rouge) montre des performances intéressantes sur le problème OneMax avec des chaînes de 300 bits. La roulette adaptative démontre une convergence plus rapide dans les premières générations (0-1000), obtenant une meilleure fitness moyenne grace a son utilisation du 3-flip ou 5-flip au départ . Cependant, les deux approches finissent par atteindre des performances similaires vers la fin de l'évolution (autour de la génération 3000), avec une fitness moyenne proche de 300 (l'optimum pour ce problème). Cela suggère que bien que le bit-flip soit l'opérateur le plus efficace, l'utilisation adaptative de multiples opérateurs offre un avantage en termes de vitesse de convergence initiale.
+
+\include{UCB-algo}
 
 \end{document}

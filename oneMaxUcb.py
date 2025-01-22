@@ -100,7 +100,7 @@ class UCBAlgorithm:
             case _ if self.isMasked:
                 toolbox.register("evaluate", self._one_max_fitness_masked)
             case _ if self.isLeadingOnes:
-                toolbox.register("evaluate", self._one_max_fitness_masked_leading_ones)
+                toolbox.register("evaluate", self._one_max_fitness_leading_ones)
             case _:
                 toolbox.register("evaluate", self._one_max_fitness)
 
@@ -194,7 +194,7 @@ class UCBAlgorithm:
         return sum,
 
     @staticmethod
-    def _one_max_fitness_masked_leading_ones(individual: List[int]) -> Tuple[float]:
+    def _one_max_fitness_leading_ones(individual: List[int]) -> Tuple[float]:
         count = 0
         for bit in individual:
             if bit == 1:
@@ -312,7 +312,7 @@ class UCBAlgorithm:
 
         # Second graphique: Distribution des opérateurs
         plt.figure(figsize=(10, 6))
-        # colors = ['purple', 'pink', 'red', 'black', 'blue']
+        # colors = ['purple', 'pink', 'red', 'black', 'blue'] # useless color is blue
         colors = ['purple', 'pink', 'red', 'black']
         # labels = ['bit-flip', '1-flip', '3-flip', '5-flip', 'useless']
         labels = ['bit-flip', '1-flip', '3-flip', '5-flip']
@@ -337,6 +337,7 @@ def main():
     # Création et exécution de l'algorithme
     # Pour appliquer le masque UCBAlgorithm(config, isMasked=True)
     # Pour appliquer le masque UCBAlgorithm(config, isLeadingOnes=True)
+    # pour lancer l'expérimentation de l'opérateur initule => il faut enlver les commentaires sur tous ce qui `useless`
     ucb = UCBAlgorithm(config)
     mean_max_fitness, mean_mean_fitness, mean_proba_op = ucb.run()
 

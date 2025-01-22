@@ -305,7 +305,7 @@ def main():
     """Point d'entrée principal"""
     config = GeneticAlgorithmConfig()
     # Pour appliquer le masque GeneticAlgorithm(config, isMasked=True)
-    # Pour leadingOnes GeneticAlgorithm(config, isMasked=True)
+    # Pour leadingOnes GeneticAlgorithm(config, isLeadingOnes=True)
     algorithm = GeneticAlgorithm(config)
     visualiser = Visualiser()
 
