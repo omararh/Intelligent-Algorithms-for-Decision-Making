@@ -2,7 +2,6 @@ import networkx as nx  # Pour la représentation du graphe
 from dataclasses import dataclass
 import numpy as np
 from oneMaxSteadyState import GeneticAlgorithm, GeneticConfig, MutationType, OperatorConfig
-import random
 import matplotlib.pyplot as plt
 
 
@@ -10,6 +9,8 @@ import matplotlib.pyplot as plt
 class IslandModelConfig:
     genetic_config: GeneticConfig
     migration_rate: float = 0.2  # Taux de migration de base
+    alpha: float = 0.8  # Paramètre d'inertie
+    beta: float = 0.1  # Paramètre de bruit
 
 
 class IslandModel:
@@ -26,12 +27,14 @@ class IslandModel:
             self.topology.add_node(op)
 
         # Création des connexions entre îles (arêtes)
-        # Ici on crée un graphe complet, mais on peut changer la topologie
         self._setup_complete_topology()
 
         # Matrice de migration (M)
         self.migration_matrix = np.zeros((len(MutationType), len(MutationType)))
         self._initialize_migration_matrix()
+
+        # Matrice de données D pour stocker les améliorations
+        self.data_matrix = np.zeros((len(MutationType), len(MutationType)))
 
         # Initialisation des populations
         self.populations = {op: [] for op in MutationType}
@@ -44,12 +47,6 @@ class IslandModel:
                 if op1 != op2:
                     self.topology.add_edge(op1, op2)
 
-    def _setup_ring_topology(self):
-        """Alternative: Crée une topologie en anneau"""
-        operators = list(MutationType)
-        for i in range(len(operators)):
-            self.topology.add_edge(operators[i], operators[(i + 1) % len(operators)])
-
     def _initialize_migration_matrix(self):
         """Initialise la matrice de migration selon la topologie"""
         n = len(MutationType)
@@ -61,6 +58,56 @@ class IslandModel:
                     self.migration_matrix[i][j] = base_rate
                 elif op1 == op2:
                     self.migration_matrix[i][j] = 1 - self.config.migration_rate
+
+    def _update_migration_matrix(self):
+        """Met à jour la matrice de migration en fonction des améliorations observées."""
+
+        # Mise à jour de la matrice de données D
+        for i, op1 in enumerate(MutationType):
+            for j, op2 in enumerate(MutationType):
+                if op1 != op2:
+                    improvements = []
+                    for ind in self.populations[op1]:
+                        if ind.fitness.values:
+                            original_fitness = ind.fitness.values[0]
+                            # Simuler le traitement sur l'île j
+                            new_fitness = self.islands[op2].toolbox.evaluate(ind)
+                            improvements.append(new_fitness[0] - original_fitness)
+                    if improvements:
+                        self.data_matrix[i][j] = np.mean(improvements)
+
+        # Mise à jour de la matrice de migration M
+        for i, op1 in enumerate(MutationType):
+            # Calcul du vecteur de récompense R
+            R = np.zeros(len(MutationType))
+            best_islands = np.argwhere(self.data_matrix[i] == np.max(self.data_matrix[i])).flatten()
+            for k in best_islands:
+                R[k] = 1.0 / len(best_islands)
+
+            # Mise à jour de la ligne i de la matrice de migration M
+            for j, op2 in enumerate(MutationType):
+                # ui,t+1 = (1 - α)ui,t + αrt
+                self.migration_matrix[i][j] = (1 - self.config.beta) * (
+                        self.config.alpha * self.migration_matrix[i][j] + (1 - self.config.alpha) * R[j]
+                ) + self.config.beta * np.random.random()
+
+        # Normalisation de la matrice de migration pour que chaque ligne somme à 1
+        self.migration_matrix = self.migration_matrix / self.migration_matrix.sum(axis=1, keepdims=True)
+
+    def _analyze_improvements(self):
+        """Évalue les améliorations obtenues par les individus après migration."""
+        for i, op1 in enumerate(MutationType):
+            for j, op2 in enumerate(MutationType):
+                if op1 != op2:
+                    improvements = []
+                    for ind in self.populations[op1]:
+                        if ind.fitness.values:
+                            original_fitness = ind.fitness.values[0]
+                            # Simuler le traitement sur l'île j
+                            new_fitness = self.islands[op2].toolbox.evaluate(ind)
+                            improvements.append(new_fitness[0] - original_fitness)
+                    if improvements:
+                        self.data_matrix[i][j] = np.mean(improvements)
 
     def _initialize_populations(self):
         """Initialise les populations de chaque île"""
@@ -80,7 +127,7 @@ class IslandModel:
                 # Évolution avec l'opérateur de l'île
                 operator_config = OperatorConfig(
                     name=op.value,
-                    color="blue",
+                    color=None,
                     mutation_type=op
                 )
                 # Évolution
@@ -89,7 +136,13 @@ class IslandModel:
                 self.populations[op] = self.islands[op]._insert_best_fitness(
                     self.populations[op], offspring)
 
-        # Migration selon la matrice M
+        # Analyse des améliorations après évolution
+        self._analyze_improvements()
+
+        # Mise à jour de la matrice de migration
+        self._update_migration_matrix()
+
+        # Gestion des migrations
         self._handle_migrations()
 
     def _handle_migrations(self):
@@ -100,12 +153,16 @@ class IslandModel:
         # Traitement des migrations
         for i, op1 in enumerate(MutationType):
             for ind in self.populations[op1][:]:  # Copie de la liste
-                for j, op2 in enumerate(MutationType):
-                    if self.topology.has_edge(op1, op2):  # Vérifie si la migration est possible
-                        if random.random() < self.migration_matrix[i][j]:
-                            migrations[op2].append(ind)
-                            self.populations[op1].remove(ind)
-                            break
+                # Sélection de l'île de destination en fonction des probabilités de migration
+                destination_island = np.random.choice(
+                    list(MutationType),
+                    p=self.migration_matrix[i]
+                )
+
+                # Migration de l'individu vers l'île de destination
+                if destination_island != op1:  # On ne migre pas vers la même île
+                    migrations[destination_island].append(ind)
+                    self.populations[op1].remove(ind)
 
         # Application des migrations
         for op, migrants in migrations.items():
@@ -152,35 +209,37 @@ class IslandModel:
 
     def plot_results(self, history):
         """Visualisation des résultats"""
-        plt.figure(figsize=(12, 5))
+        fig, ax = plt.subplots(figsize=(15, 8))
 
-        # Plot de la fitness moyenne
-        plt.subplot(1, 2, 1)
-        for op, data in history.items():
+        for i, op in enumerate(MutationType):
+            data = history[op]
             fitness_values = [d[0] for d in data]
-            plt.plot(fitness_values, label=op.value)
-        plt.xlabel('Génération')
-        plt.ylabel('Fitness moyenne')
-        plt.title('Évolution de la fitness par île')
-        plt.legend()
+            ax.plot(fitness_values, label=f'Île {op.value}')
 
-        # Plot de la taille des populations
-        plt.subplot(1, 2, 2)
-        for op, data in history.items():
-            pop_sizes = [d[1] for d in data]
-            plt.plot(pop_sizes, label=op.value)
-        plt.xlabel('Génération')
-        plt.ylabel('Taille population')
-        plt.title('Évolution des tailles de population')
-        plt.legend()
+        ax.set_xlabel('Génération')
+        ax.set_ylabel('Fitness moyenne')
+        ax.set_title('Évolution de la fitness')
+        ax.legend()
+        plt.tight_layout()
+        plt.show()
 
+    def plot_migration_matrix(self):
+        """Visualise la matrice de migration."""
+        plt.figure(figsize=(10, 8))
+        plt.imshow(self.migration_matrix, cmap='viridis', interpolation='nearest')
+        plt.colorbar(label='Probabilité de migration')
+        plt.xticks(range(len(MutationType)), [op.value for op in MutationType], rotation=45)
+        plt.yticks(range(len(MutationType)), [op.value for op in MutationType])
+        plt.title('Matrice de migration dynamique')
+        plt.xlabel('Île de destination')
+        plt.ylabel('Île de départ')
         plt.tight_layout()
         plt.show()
 
 
 def main():
     genetic_config = GeneticConfig(
-        one_max_length=300,
+        one_max_length=400,
         population_size=100,
         max_generations=7000,
         p_crossover=1.0,
@@ -190,12 +249,15 @@ def main():
 
     island_config = IslandModelConfig(
         genetic_config=genetic_config,
-        migration_rate=0.2
+        migration_rate=0.2,
+        alpha=0.8,
+        beta=0.1
     )
 
     model = IslandModel(island_config)
     history = model.run()
     model.plot_results(history)
+    model.plot_migration_matrix()  # Visualisation de la matrice de migration
 
 
 if __name__ == "__main__":
