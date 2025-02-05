@@ -15,8 +15,6 @@ class Config:
     p_mutation: float = 1.0
     max_generations: int = 3000
     nb_runs: int = 30
-    alpha: float = 0.1
-    pmin: float = 0.125
     window_size: int = 10
 
 

@@ -1,57 +1,39 @@
 import random
-from typing import List, Callable
-from settings import Config
-from enum import Enum, auto
-
-
-class MutationType(Enum):
-    ONE_FLIP = auto()
-    THREE_FLIPS = auto()
-    FIVE_FLIPS = auto()
-    BIT_FLIP = auto()
+from config import GeneticConfig
 
 
 class MutationOperators:
     @staticmethod
-    def one_flip(bits: List[int]) -> List[int]:
-        """Mutation qui inverse un seul bit aléatoire."""
-        child = bits.copy()
-        idx = random.randint(0, Config.VECTOR_SIZE - 1)
-        child[idx] = 1 - child[idx]
-        return child
+    def single_bit_flip(genome):
+        """Flips a single random bit in the genome."""
+        offspring = genome[:]
+        position = random.randint(0, GeneticConfig.GENOME_LENGTH - 1)
+        offspring[position] = 1 - offspring[position]
+        return offspring
 
     @staticmethod
-    def n_flips(bits: List[int], n: int) -> List[int]:
-        """Mutation qui inverse n bits aléatoires distincts."""
-        child = bits.copy()
-        indices = random.sample(range(Config.VECTOR_SIZE), n)
-        for idx in indices:
-            child[idx] = 1 - child[idx]
-        return child
+    def triple_bit_flip(genome):
+        """Flips three distinct random bits in the genome."""
+        offspring = genome[:]
+        positions = random.sample(range(GeneticConfig.GENOME_LENGTH), 3)
+        for pos in positions:
+            offspring[pos] = 1 - offspring[pos]
+        return offspring
 
     @staticmethod
-    def three_flips(bits: List[int]) -> List[int]:
-        return MutationOperators.n_flips(bits, 3)
+    def quintuple_bit_flip(genome):
+        """Flips five distinct random bits in the genome."""
+        offspring = genome[:]
+        positions = random.sample(range(GeneticConfig.GENOME_LENGTH), 5)
+        for pos in positions:
+            offspring[pos] = 1 - offspring[pos]
+        return offspring
 
     @staticmethod
-    def five_flips(bits: List[int]) -> List[int]:
-        return MutationOperators.n_flips(bits, 5)
-
-    @staticmethod
-    def bit_flip(bits: List[int]) -> List[int]:
-        """Mutation qui inverse chaque bit avec une probabilité de 1/taille."""
-        child = bits.copy()
-        for i in range(Config.VECTOR_SIZE):
-            if random.random() < 1 / Config.VECTOR_SIZE:
-                child[i] = 1 - child[i]
-        return child
-
-    @staticmethod
-    def get_operator(mutation_type: MutationType) -> Callable:
-        operators = {
-            MutationType.ONE_FLIP: MutationOperators.one_flip,
-            MutationType.THREE_FLIPS: MutationOperators.three_flips,
-            MutationType.FIVE_FLIPS: MutationOperators.five_flips,
-            MutationType.BIT_FLIP: MutationOperators.bit_flip
-        }
-        return operators[mutation_type]
+    def uniform_bit_flip(genome):
+        """Flips each bit with probability 1/genome_length."""
+        offspring = genome[:]
+        for i in range(GeneticConfig.GENOME_LENGTH):
+            if random.random() < 1 / GeneticConfig.GENOME_LENGTH:
+                offspring[i] = 1 - offspring[i]
+        return offspring

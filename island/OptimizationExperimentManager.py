@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from IslandBasedOptimizer import IslandBasedOptimizer
 from config import GeneticConfig
-import seaborn as sns
 
 
 class OptimizationExperimentManager:
@@ -116,7 +115,7 @@ class OptimizationExperimentManager:
                 ])
 
         # Plot 1: Fitness Progression
-        plt.figure(figsize=(12, 6))
+        plt.figure(figsize=(10, 6))
         plt.plot(mean_fitness,
                  label=f"Mean Best Fitness ({GeneticConfig.NUM_EXPERIMENTS} runs)", color="purple")
         plt.xlabel("Generation")
@@ -128,7 +127,7 @@ class OptimizationExperimentManager:
 
         # Plot 2: Population Dynamics
         colors = ['purple', 'pink', 'red', 'black']
-        plt.figure(figsize=(12, 6))
+        plt.figure(figsize=(10, 6))
         for name, color in zip(island_names, colors):
             plt.plot(avg_populations[name], label=f"{name}", color=color)
         plt.xlabel("Generation")
@@ -139,18 +138,3 @@ class OptimizationExperimentManager:
         plt.legend()
         plt.grid(True)
         plt.show()
-
-        # Plot 3: Migration Matrix Heatmap
-        if optimizer:
-            plt.figure(figsize=(10, 8))
-            sns.heatmap(optimizer.migration_probabilities,
-                        annot=True,
-                        fmt='.2f',
-                        cmap='YlOrRd',
-                        xticklabels=[island.island_name.replace('_Island', '') for island in optimizer.islands],
-                        yticklabels=[island.island_name.replace('_Island', '') for island in optimizer.islands])
-            plt.xlabel('Destination Island')
-            plt.ylabel('Source Island')
-            plt.title('Migration Probability Matrix')
-            plt.tight_layout()
-            plt.show()

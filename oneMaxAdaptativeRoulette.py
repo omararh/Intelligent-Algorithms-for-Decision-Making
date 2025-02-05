@@ -14,8 +14,8 @@ class GeneticAlgorithmConfig:
     p_mutation: float = 1.0
     max_generations: int = 3000
     nb_runs: int = 30
-    alpha: float = 0.1
-    p_min: float = 0.125
+    alpha: float = 0.2
+    p_min: float = 0.05
 
 
 class MutationOperator:
@@ -200,8 +200,13 @@ class GeneticAlgorithm:
             operator = self.roulette.choose_operator(isAdaptative)
             for individual in offspring:
                 if random.random() < self.config.p_mutation:
+                    # old_fitness = individual.fitness.values[0]  # Sauvegarder l'ancienne fitness
                     operator(individual)
+                    new_fitness = self.toolbox.evaluate(individual)[0]
+                    # Si la nouvelle fitness est meilleure, on garde la mutation
+                    # if new_fitness > old_fitness:
                     del individual.fitness.values
+                    individual.fitness.values = (new_fitness,)
 
             # Évaluation des nouveaux individus
             invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
@@ -302,7 +307,6 @@ class Visualiser:
 
 
 def main():
-    """Point d'entrée principal"""
     config = GeneticAlgorithmConfig()
     # Pour appliquer le masque GeneticAlgorithm(config, isMasked=True)
     # Pour leadingOnes GeneticAlgorithm(config, isLeadingOnes=True)
