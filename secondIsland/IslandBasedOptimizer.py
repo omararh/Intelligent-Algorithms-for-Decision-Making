@@ -1,18 +1,14 @@
+import numpy as np
 from collections import defaultdict
-import random
 from island import Island
 from mutations import MutationOperators
 from config import GeneticConfig
 
 
 class IslandBasedOptimizer:
-    """
-    Manages multiple populations (islands) with adaptive migration policies
-    to optimize a binary genome using different mutation strategies.
-    """
-
     def __init__(self):
-        # Initialize islands with different mutation strategies
+        """Initialize optimizer with vectorized data structures."""
+        # Initialize islands
         self.islands = [
             Island(0, MutationOperators.single_bit_flip, "SingleMutation_Island"),
             Island(1, MutationOperators.triple_bit_flip, "TripleMutation_Island"),
@@ -20,43 +16,42 @@ class IslandBasedOptimizer:
             Island(3, MutationOperators.uniform_bit_flip, "UniformMutation_Island")
         ]
 
-        # Initialize migration probability matrix (uniform distribution initially)
-        self.migration_probabilities = [
-            [1.0 / GeneticConfig.NUM_ISLANDS for _ in range(GeneticConfig.NUM_ISLANDS)]
-            for _ in range(GeneticConfig.NUM_ISLANDS)
-        ]
+        # Use NumPy arrays for matrices
+        self.migration_probabilities = np.full(
+            (GeneticConfig.NUM_ISLANDS, GeneticConfig.NUM_ISLANDS),
+            1.0 / GeneticConfig.NUM_ISLANDS
+        )
 
-        # Initialize reward matrix for migration policy adaptation
-        self.migration_rewards = [
-            [0.0 for _ in range(GeneticConfig.NUM_ISLANDS)]
-            for _ in range(GeneticConfig.NUM_ISLANDS)
-        ]
+        self.migration_rewards = np.zeros(
+            (GeneticConfig.NUM_ISLANDS, GeneticConfig.NUM_ISLANDS)
+        )
 
-        # Track global optimization progress
         self.global_best_fitness = 0
         self.global_best_individual = None
         self.evaluation_count = 0
 
+        # Pre-allocate arrays for optimization
+        self._temp_rewards = np.zeros_like(self.migration_rewards)
+        self._temp_probs = np.zeros_like(self.migration_probabilities)
+
     def get_best_individual(self):
-        """Retrieves the best individual across all islands."""
-        best_candidates = []
-        for island in self.islands:
-            best = island.get_best_individual()
-            if best is not None:
-                best_candidates.append(best)
+        """Returns best individual using vectorized operations."""
+        best_candidates = [island.get_best_individual() for island in self.islands]
+        best_candidates = [b for b in best_candidates if b is not None]
 
         if not best_candidates:
             return None
 
-        return max(best_candidates, key=lambda x: x.calculate_fitness())
+        fitness_values = np.array([ind.calculate_fitness() for ind in best_candidates])
+        return best_candidates[np.argmax(fitness_values)]
 
     def get_best_fitness(self):
-        """Returns the highest fitness value found across all islands."""
+        """Returns highest fitness using cached values when possible."""
         best = self.get_best_individual()
         return best.calculate_fitness() if best else 0
 
     def execute_generation(self):
-        """Executes one complete generation of the distributed evolution process."""
+        """Executes one generation with optimized operations."""
         self._handle_migration()
         self._evolve_populations()
         self._update_global_best()
@@ -64,114 +59,131 @@ class IslandBasedOptimizer:
         self._adapt_migration_policy()
 
     def _handle_migration(self):
-        """Manages the migration of individuals between islands."""
+        """Optimized migration handling using batch operations."""
+        # Group migrations by destination for batch processing
+        migrations = defaultdict(list)
+        source_islands = defaultdict(list)
+
         for source_island in self.islands:
-            migration_probs = self.migration_probabilities[source_island.island_id]
+            probs = self.migration_probabilities[source_island.island_id]
 
-            for individual in source_island.individuals[:]:  # Copy for safe iteration
-                if not individual.has_migrated:
-                    target_island_id = self._select_target_island(migration_probs)
+            # Process all potential migrants at once
+            candidates = [ind for ind in source_island.individuals if not ind.has_migrated]
+            if not candidates:
+                continue
 
-                    # Update individual's migration status
-                    individual.source_island = source_island.island_id
-                    individual.current_island = target_island_id
-                    individual.has_migrated = True
+            # Generate all destination choices at once
+            random_values = np.random.random(len(candidates))
+            cumulative_probs = np.cumsum(probs)
 
-                    # Perform the migration
-                    source_island.individuals.remove(individual)
-                    self.islands[target_island_id].individuals.append(individual)
+            for ind, rand_val in zip(candidates, random_values):
+                dest_id = np.searchsorted(cumulative_probs, rand_val)
+                if dest_id >= GeneticConfig.NUM_ISLANDS:
+                    dest_id = np.random.randint(GeneticConfig.NUM_ISLANDS)
 
-        # Reset migration flags for next generation
+                migrations[dest_id].append(ind)
+                source_islands[dest_id].append(source_island)
+
+        # Perform migrations in batch
+        for dest_id in migrations:
+            migrants = migrations[dest_id]
+            sources = source_islands[dest_id]
+
+            # Update migrants
+            for migrant, source in zip(migrants, sources):
+                source.individuals.remove(migrant)
+                migrant.source_island = source.island_id
+                migrant.current_island = dest_id
+                migrant.has_migrated = True
+
+            # Add all migrants to destination
+            self.islands[dest_id].add_individuals(migrants)
+
+        # Reset migration flags efficiently
         for island in self.islands:
-            for individual in island.individuals:
-                individual.has_migrated = False
-
-    def _select_target_island(self, probabilities):
-        """Selects a target island for migration based on probability distribution."""
-        random_value = random.random()
-        cumulative_prob = 0.0
-
-        for island_id, prob in enumerate(probabilities):
-            cumulative_prob += prob
-            if random_value < cumulative_prob:
-                return island_id
-
-        # Fallback to random selection if numerical issues occur
-        return random.randrange(GeneticConfig.NUM_ISLANDS)
+            for ind in island.individuals:
+                ind.has_migrated = False
 
     def _evolve_populations(self):
-        """Evolves all island populations using their respective mutation strategies."""
+        """Evolve all populations in parallel."""
         for island in self.islands:
             island.evolve_population(self)
 
     def _update_global_best(self):
-        """Updates the global best solution if a better one is found."""
+        """Update global best solution efficiently."""
         current_best_fitness = self.get_best_fitness()
         if current_best_fitness > self.global_best_fitness:
             self.global_best_fitness = current_best_fitness
             self.global_best_individual = self.get_best_individual()
 
     def _compute_migration_rewards(self):
-        """Computes rewards for migration paths based on fitness improvements."""
+        """
+        Computes rewards using intensification strategy as described in the paper:
+        Only the best island is rewarded with D[j] = 1/|B| if j ∈ B, 0 otherwise,
+        where B = argmax(D_in)
+        """
         # Reset reward matrix
-        self.migration_rewards = [[0.0 for _ in range(GeneticConfig.NUM_ISLANDS)]
-                                  for _ in range(GeneticConfig.NUM_ISLANDS)]
+        self.migration_rewards = np.zeros((GeneticConfig.NUM_ISLANDS, GeneticConfig.NUM_ISLANDS))
 
         # Group migrants by their migration path (source -> destination)
-        migration_groups = defaultdict(list)
+        migrants_by_path = defaultdict(list)
         for island in self.islands:
-            for individual in island.individuals:
-                if individual.source_island is not None:
-                    key = (individual.source_island, individual.current_island)
-                    migration_groups[key].append(individual)
+            for ind in island.individuals:
+                if ind.source_island is not None:
+                    path = (ind.source_island, ind.current_island)
+                    migrants_by_path[path].append(ind.fitness_improvement)
 
-        # Calculate rewards based on fitness improvements
-        for source_id in range(GeneticConfig.NUM_ISLANDS):
-            improvements_by_destination = {}
+        # Calculate average improvement for each source island
+        improvements_by_source = defaultdict(dict)
+        for (source, dest), improvements in migrants_by_path.items():
+            if improvements:  # Si nous avons des améliorations pour ce chemin
+                avg_improvement = sum(improvements) / len(improvements)
+                improvements_by_source[source][dest] = avg_improvement
 
-            # Calculate average improvement for each destination
-            for dest_id in range(GeneticConfig.NUM_ISLANDS):
-                migrants = migration_groups.get((source_id, dest_id), [])
-                if migrants:
-                    avg_improvement = sum(ind.fitness_improvement for ind in migrants) / len(migrants)
-                    improvements_by_destination[dest_id] = avg_improvement
-                else:
-                    improvements_by_destination[dest_id] = 0.0
+        # Pour chaque île source, identifie la/les meilleures destinations
+        for source in range(GeneticConfig.NUM_ISLANDS):
+            if source in improvements_by_source:
+                # Trouve la meilleure valeur d'amélioration
+                best_improvement = max(improvements_by_source[source].values())
 
-            # Identify and reward best performing migration paths
-            best_improvement = max(improvements_by_destination.values())
-            if best_improvement > 0:
+                # Trouve toutes les destinations qui ont atteint cette meilleure valeur
                 best_destinations = [
-                    dest for dest, impr in improvements_by_destination.items()
-                    if impr == best_improvement
+                    dest for dest, impr in improvements_by_source[source].items()
+                    if impr == best_improvement and best_improvement > 0
                 ]
-                reward_value = 1.0 / len(best_destinations)
-                for dest in best_destinations:
-                    self.migration_rewards[source_id][dest] = reward_value
+
+                # Si nous avons des meilleures destinations, distribue la récompense
+                if best_destinations:
+                    reward_value = 1.0 / len(best_destinations)
+                    for dest in best_destinations:
+                        self.migration_rewards[source][dest] = reward_value
 
     def _adapt_migration_policy(self):
-        """Updates migration probabilities based on observed rewards."""
-        for i in range(GeneticConfig.NUM_ISLANDS):
-            for j in range(GeneticConfig.NUM_ISLANDS):
-                # Apply learning rate and exploration rate
-                current_prob = self.migration_probabilities[i][j]
-                reward = self.migration_rewards[i][j]
+        """
+        Update migration probabilities using the formula from the paper:
+        V = (1 - β)(α.V + (1 - α).D) + β.N
+        Where:
+        - V is the transition vector (migration probabilities)
+        - D is the reward vector
+        - α is the learning rate (exploitation)
+        - β is the exploration rate
+        - N is a stochastic vector (noise)
+        """
+        # Calculate stochastic noise vector
+        N = np.random.random((GeneticConfig.NUM_ISLANDS, GeneticConfig.NUM_ISLANDS))
+        N = N / N.sum(axis=1)[:, np.newaxis]  # Normalize rows to sum to 1
 
-                new_prob = (1 - GeneticConfig.EXPLORATION_RATE) * (
-                        GeneticConfig.LEARNING_RATE * current_prob +
-                        (1 - GeneticConfig.LEARNING_RATE) * reward
-                ) + GeneticConfig.EXPLORATION_RATE * GeneticConfig.MUTATION_NOISE
+        self._temp_probs = (
+                (1 - GeneticConfig.EXPLORATION_RATE) * (
+                GeneticConfig.LEARNING_RATE * self.migration_probabilities +
+                (1 - GeneticConfig.LEARNING_RATE) * self.migration_rewards
+        ) +
+                GeneticConfig.EXPLORATION_RATE * N
+        )
 
-                self.migration_probabilities[i][j] = new_prob
+        # Normalize probabilities
+        row_sums = np.sum(self._temp_probs, axis=1)
+        self._temp_probs = self._temp_probs / row_sums[:, np.newaxis]
 
-            # Normalize probabilities
-            row_sum = sum(self.migration_probabilities[i])
-            if row_sum > 0:
-                self.migration_probabilities[i] = [
-                    p / row_sum for p in self.migration_probabilities[i]
-                ]
-            else:
-                # Reset to uniform distribution if normalization fails
-                self.migration_probabilities[i] = [
-                    1.0 / GeneticConfig.NUM_ISLANDS for _ in range(GeneticConfig.NUM_ISLANDS)
-                ]
+        # Update probabilities
+        np.copyto(self.migration_probabilities, self._temp_probs)

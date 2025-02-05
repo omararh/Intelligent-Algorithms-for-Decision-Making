@@ -1,24 +1,23 @@
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
-import os
 from IslandBasedOptimizer import IslandBasedOptimizer
 from config import GeneticConfig
+import seaborn as sns
 
 
 class OptimizationExperimentManager:
     """
     Handles running multiple optimization experiments and analyzing their results.
-    Includes functionality for data collection, statistical analysis, and visualization.
+    Includes functionality for statistical analysis and visualization.
     """
 
     @staticmethod
     def execute_single_optimization():
         """
         Executes a single complete optimization run and collects performance metrics.
-        
+
         Returns:
-            tuple: Contains histories of (fitness values, population sizes, evaluation counts)
+            tuple: Contains histories of (fitness values, population sizes)
         """
         optimizer = OptimizationExperimentManager._initialize_optimizer()
 
@@ -91,51 +90,17 @@ class OptimizationExperimentManager:
                 population_history[island.island_name].append(len(island.individuals))
 
     @staticmethod
-    def save_experiment_results(fitness_data, evaluation_data,
-                                filename="optimization_results.csv",
-                                output_dir="experiment_results"):
-        """
-        Saves aggregated experiment results to a CSV file.
-        
-        Args:
-            fitness_data (np.array): Fitness values across all runs
-            evaluation_data (np.array): Evaluation counts across all runs
-            filename (str): Name for the output file
-            output_dir (str): Directory for storing results
-        """
-        # Calculate mean performance metrics
-        mean_fitness = np.mean(fitness_data, axis=0)
-        mean_evaluations = np.mean(evaluation_data, axis=0)
-
-        # Prepare data for storage
-        results_df = pd.DataFrame({
-            "generation": list(range(len(mean_fitness))),
-            "mean_fitness": mean_fitness,
-            "mean_evaluation_count": mean_evaluations
-        })
-
-        # Ensure output directory exists
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-
-        # Save to CSV
-        output_path = os.path.join(output_dir, filename)
-        results_df.to_csv(output_path, index=False)
-        print(f"Results saved to: {output_path}")
-
-    @staticmethod
-    def create_performance_visualizations(fitness_data, population_data, evaluation_data):
+    def create_performance_visualizations(fitness_data, population_data, _, optimizer=None):
         """
         Creates and displays visualization plots of the experiment results.
-        
+
         Args:
             fitness_data (np.array): Fitness values from all runs
             population_data (list): Population sizes per island
-            evaluation_data (np.array): Evaluation counts from all runs
+            optimizer: Instance of IslandBasedOptimizer pour accéder à la matrice de migration
         """
         # Calculate mean metrics
         mean_fitness = np.mean(fitness_data, axis=0)
-        mean_evaluations = np.mean(evaluation_data, axis=0)
 
         # Get island names from first run
         island_names = list(population_data[0].keys())
@@ -153,7 +118,7 @@ class OptimizationExperimentManager:
         # Plot 1: Fitness Progression
         plt.figure(figsize=(12, 6))
         plt.plot(mean_fitness,
-                 label=f"Mean Best Fitness ({GeneticConfig.NUM_EXPERIMENTS} runs)")
+                 label=f"Mean Best Fitness ({GeneticConfig.NUM_EXPERIMENTS} runs)", color="purple")
         plt.xlabel("Generation")
         plt.ylabel("Fitness Value")
         plt.title("Evolution of Best Fitness Over Generations")
@@ -162,9 +127,10 @@ class OptimizationExperimentManager:
         plt.show()
 
         # Plot 2: Population Dynamics
+        colors = ['purple', 'pink', 'red', 'black']
         plt.figure(figsize=(12, 6))
-        for name in island_names:
-            plt.plot(avg_populations[name], label=f"{name}")
+        for name, color in zip(island_names, colors):
+            plt.plot(avg_populations[name], label=f"{name}", color=color)
         plt.xlabel("Generation")
         plt.ylabel("Mean Population Size")
         plt.title(f"Population Dynamics per Island (Mean of {GeneticConfig.NUM_EXPERIMENTS} runs)\n" +
@@ -174,13 +140,17 @@ class OptimizationExperimentManager:
         plt.grid(True)
         plt.show()
 
-        # Plot 3: Fitness vs Evaluations
-        plt.figure(figsize=(12, 6))
-        plt.plot(mean_evaluations, mean_fitness,
-                 label="Fitness vs Evaluation Count")
-        plt.xlabel("Number of Evaluations")
-        plt.ylabel("Fitness Value")
-        plt.title("Optimization Progress vs Computational Effort")
-        plt.legend()
-        plt.grid(True)
-        plt.show()
+        # Plot 3: Migration Matrix Heatmap
+        if optimizer:
+            plt.figure(figsize=(10, 8))
+            sns.heatmap(optimizer.migration_probabilities,
+                        annot=True,
+                        fmt='.2f',
+                        cmap='YlOrRd',
+                        xticklabels=[island.island_name.replace('_Island', '') for island in optimizer.islands],
+                        yticklabels=[island.island_name.replace('_Island', '') for island in optimizer.islands])
+            plt.xlabel('Destination Island')
+            plt.ylabel('Source Island')
+            plt.title('Migration Probability Matrix')
+            plt.tight_layout()
+            plt.show()
