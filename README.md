@@ -14,7 +14,7 @@ Reading the first pages of `article.pdf` will allow you to understand very well 
 - `deap version`: 1.4.1 (gentic algorithms library)
 - `numpy`: 1.26.4
 
-## Files
+## Project structure
 
 ### `oneMaxSteadyState.py`
 
