@@ -1,52 +1,41 @@
 # README
 
-## Requis
+## Introduction
 
-- `python version` : 3.10.0
-- `deap version` : 1.4.1
-- `numpy` : 1.26.4
+Genetic algorithms are optimization techniques inspired by the principles of natural selection and evolution. They work by evolving a population of potential solutions through processes like selection, crossover, and mutation to find increasingly better solutions to a given problem.
 
-## Fichiers
+The OneMax problem is a simple benchmark problem in genetic algorithms where the goal is to maximize the number of ones in a binary string. It serves as a straightforward test case for evaluating the performance and behavior of genetic algorithms in a controlled environment.
+
+Reading `article.pdf` will alow you to understand very well this two concepts.
+
+## Requirements
+
+- `python version`: 3.10.0
+- `deap version`: 1.4.1
+- `numpy`: 1.26.4
+
+## Files
 
 ### `oneMaxSteadyState.py`
 
-Permet d'effectuer différentes expérimentations, où l'on peut choisir d'étudier soit les effets de la mutation, soit
-l'impact de la taille de la population, soit l'influence du croisement (crossover), soit les mécanismes de sélection sur
-l'évolution des solutions. La fonction principale main() initialise une configuration et un objet d'expérimentation,
-puis appelle la méthode correspondant à l'expérience souhaitée, avec actuellement la mutation activée et les autres
-types d'expériences en commentaires.
+Allows for various experiments where you can choose to study either the effects of mutation, the impact of population size, the influence of crossover, or selection mechanisms on the evolution of solutions. The main function main() initializes a configuration and an experiment object, then calls the method corresponding to the desired experiment, with mutation currently activated and other types of experiments commented out.
 
 ### `OneMaxEstimateDistrib.py`
 
-Implémente une expérimentation sur un algorithme à estimation de distribution, où différentes configurations sont
-testées en faisant varier le nombre d'individus "k-best" (2, 4, 8, 10 et 14) qui sont sélectionnés comme parents à
-chaque génération.
+Implements an experiment on a distribution estimation algorithm, where different configurations are tested by varying the number of "k-best" individuals (2, 4, 8, 10, and 14) that are selected as parents in each generation.
 
 ### `OneMaxCompactAlgo.py`
 
-Présente une expérimentation sur l'algorithme génétique compact (cGA) où l'on teste deux configurations différentes du
-taux d'apprentissage α : une première avec α = 1 sur 7000 générations, et une seconde avec α = 2 sur 3500 générations
-pour comparer leur impact sur la convergence.
+Presents an experiment on the compact genetic algorithm (cGA) where two different configurations of the learning rate α are tested: one with α = 1 over 7000 generations, and another with α = 2 over 3500 generations to compare their impact on convergence.
 
 ### `OneMaxAptativeRoulette.py`
 
-Présente une expérimentation sur la roulette adaptative qui compare l'efficacité de différents opérateurs de mutation (
-1-flip, 3-flip, 5-flip, bit-flip) dans un algorithme génétique, où la probabilité de sélection de chaque opérateur est
-ajustée dynamiquement selon leur performance. Plus spécifiquement, deux configurations sont testées et visualisées : une
-première qui compare les taux d'utilisation des différents opérateurs au fil des générations, et une seconde qui compare
-les performances entre une roulette adaptative et une roulette fixe utilisant uniquement le bit-flip, ici on peut aussi
-expérimenter le masque ainsi que le problème leading ones (voir le main où il faut suivre les commentaires pour lancer
-ces expérimentations).
+Presents an experiment on the adaptive roulette wheel that compares the effectiveness of different mutation operators (1-flip, 3-flip, 5-flip, bit-flip) in a genetic algorithm, where the selection probability of each operator is dynamically adjusted according to their performance. Specifically, two configurations are tested and visualized: one that compares the usage rates of different operators over generations, and another that compares performance between an adaptive roulette and a fixed roulette using only bit-flip. Here, you can also experiment with the mask and the leading ones problem (see the main where you need to follow the comments to launch these experiments).
 
 ### `OneMaxUcb.py`
 
-Présente une expérimentation sur l'algorithme UCB (Upper Confidence Bound) appliqué à la sélection adaptative des
-opérateurs de mutation dans un algorithme génétique, avec plusieurs tests : une première comparaison entre différents
-opérateurs de mutation (bit-flip, 1-flip, 3-flips, 5-flips) où l'on observe leur taux d'utilisation, puis un test avec
-un opérateur inutile (identité) pour valider l'efficacité de la méthode, et enfin des tests sur des variantes du
-problème OneMax (avec masque) et sur le problème LeadingOnes pour évaluer la robustesse de l'approche (toujours suivre
-ce qui a comme commentaires dans le main pour lancer ces expérimentations).
+Presents an experiment on the UCB (Upper Confidence Bound) algorithm applied to the adaptive selection of mutation operators in a genetic algorithm, with several tests: a first comparison between different mutation operators (bit-flip, 1-flip, 3-flips, 5-flips) where we observe their usage rate, then a test with a useless operator (identity) to validate the effectiveness of the method, and finally tests on variants of the OneMax problem (with mask) and on the LeadingOnes problem to evaluate the robustness of the approach (always follow the comments in the main to launch these experiments).
 
-### Dossier `island`
+### `island` Folder
 
-On retrouve l'implémentation de l'island model, il suffit de lancer le fichier `main.py` pour lancer l'expérimentation.
+Contains the implementation of the island model. Simply run the `main.py` file to launch the experiment.
