@@ -41,4 +41,4 @@ Presents an experiment on the UCB (Upper Confidence Bound) algorithm applied to 
 Contains the implementation of the island model. Simply run the `main.py` file to launch the experiment.
 
 ## possible improvement ?
-Code refacto
+Code refacto.
