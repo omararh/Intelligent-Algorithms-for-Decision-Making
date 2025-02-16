@@ -6,7 +6,7 @@ Genetic algorithms are optimization techniques inspired by the principles of nat
 
 The OneMax problem is a simple benchmark problem in genetic algorithms where the goal is to maximize the number of ones in a binary string. It serves as a straightforward test case for evaluating the performance and behavior of genetic algorithms in a controlled environment.
 
-Reading the first pages of `article.pdf` will allow you to understand very well this two concepts.
+Reading the first pages of `article.pdf` will allow you to understand very well this two concepts, in this article we have done important analysis on genetic algorithms. 
 
 ## Requirements
 
