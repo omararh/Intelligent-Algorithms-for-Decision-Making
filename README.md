@@ -11,7 +11,7 @@ Reading the first pages of `article.pdf` will allow you to understand very well 
 ## Requirements
 
 - `python version`: 3.10.0
-- `deap version`: 1.4.1
+- `deap version`: 1.4.1 (gentic algorithms library)
 - `numpy`: 1.26.4
 
 ## Files
